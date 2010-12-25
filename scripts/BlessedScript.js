@@ -19,11 +19,13 @@ Kata.require([
 
         this._scale = args.scale;
 
-        var xoff = ((Math.random() - 0.5) * 2.0) * 5.0;
-        var zoff = ((Math.random() - 0.5) * 2.0) * 5.0;
+        var xoff = Math.random() * 50.0;
+        var zoff = Math.random() * 50.0;
+        var angle = Math.random() * 2 * 3.14;
         var loc = Kata.LocationIdentity();
-        loc.pos = [xoff, this._scale * 1.0, zoff];
+        loc.pos = [xoff, 0.0, zoff];
         loc.scale = [args.scale, args.scale, args.scale];
+        loc.orient = Kata._helperQuatFromAxisAngle([0, 1, 0], angle);
         args.loc = loc;
         this.connect(args, null, Kata.bind(this.connected, this));
 
