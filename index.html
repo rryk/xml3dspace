@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </script>
         <!-- Chat UI -->
         <link rel="stylesheet" href="externals/css/smoothness/jquery-ui-1.8.7.custom.css" />
-        <script type="text/javascript" src="externals/js/jquery-1.4.2.min.js">
+        <script type="text/javascript" src="externals/js/jquery-1.4.4.min.js">
         </script>
         <script type="text/javascript" src="externals/js/jquery-ui-1.8.7.custom.min.js">
         </script>
@@ -56,8 +56,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             Kata.WEB_WORKERS_ENABLED = false;
             Kata.bootstrapWorker=window.location.href;
         </script>
+        <!-- 
         <script type="text/javascript" src="externals/katajs/katajs.compiled.js">
         </script>
+         -->
 
         <!-- Deployment-specific configuraton. Ideally, everything
         that needs to be modified to make this run on different servers
@@ -74,7 +76,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             var kata_base_offset = "../../";
 
             var kata, graphics;
-            var driver = "GLGE";
+            var driver = "XML3D";
             var loginName = null;
             var avatarURL = null;
             var avatarScale = null;
@@ -90,6 +92,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     'katajs/space/loop/Space.js',
                     'katajs/oh/GraphicsSimulation.js',
                     'katajs/gfx/glgegfx.js',
+                    'katajs/gfx/xml3dgfx.js',
                     'katajs/oh/Script.js',
                     'katajs/oh/plugins/loop/LoopbackSpaceConnection.js',
                     'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js',
@@ -126,22 +129,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     return;
                 }
 
-                Kata.require([
-                    // Pre login
-                    kata_base_offset + 'scripts/ui/antiscroll.js',
-                    kata_base_offset + 'scripts/ui/login.js'
-                ], function() {
-                    antiScroll();
-                    loginui = new LoginUI( $("#login"), Avatars, handleLogin);
-
-                    $('#title').append(Title);
-                });
+                // automatic login for XML3D testing
+                if (driver == "XML3D")
+                    handleLogin("user", {url: "http://localhost/static/nancy.xml3d", scale: 1});
+                else
+                    Kata.require([
+                        // Pre login
+                        kata_base_offset + 'scripts/ui/antiscroll.js',
+                        kata_base_offset + 'scripts/ui/login.js'
+                    ], function() {
+                        antiScroll();
+                        loginui = new LoginUI( $("#login"), Avatars, handleLogin);
+    
+                        $('#title').append(Title);
+                    });
             }
 
             function loadGFX(){
                 $('#container').show();
 
-                toolbar = new ToolbarUI($('#container'));
+                if (driver != "XML3D")
+                    toolbar = new ToolbarUI($('#container'));
 
                 function graphicsReady () {
                     window.kata = new Kata.MainThread(
@@ -155,13 +163,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                         });
                     graphics = new Kata.GraphicsSimulation(driver, window.kata.getChannel(), document.getElementById("container"));
                     session = new SessionUI(window.kata.getChannel());
-                    situi = new SitUI(window.kata.getChannel(), toolbar);
-                    helpui = new HelpUI(window.kata.getChannel(), toolbar);
+                    if (driver != "XML3D") {
+                        situi = new SitUI(window.kata.getChannel(), toolbar);
+                        helpui = new HelpUI(window.kata.getChannel(), toolbar);
+                    }
                     chats = new ChatUI(window.kata.getChannel(), loginName, 300);
                     chats.create("Chat");
                 }
 
-                Kata.GraphicsSimulation.initializeDriver(driver, "static/glge_level.xml", graphicsReady);
+                if (driver == "XML3D")
+                    Kata.GraphicsSimulation.initializeDriver(driver, "static/glass.xml3d", graphicsReady);
+                else
+                    Kata.GraphicsSimulation.initializeDriver(driver, "static/glge_level.xml", graphicsReady);
             }
 
             window.onload = onDocReady;
