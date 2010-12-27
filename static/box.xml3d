@@ -5,7 +5,7 @@
         <shader id="boxShader0" script="urn:xml3d:shader:phong">
             <float3 name="diffuseColor">0.4875985784456134 0.9319151677191257 0.8152559269219637</float3>
         </shader>
-        <transform id="boxTrans0" scale="2.620139874983579 2.6175991585478187 0.34161194413900375" translation="36.51505056768656 2.6175991585478187 22.685716524720192" />    
+        <transform id="boxTrans0" scale="0.35 0.35 0.35" translation="0 0.35 0"/>    
     </defs>
     
     <!-- box -->
