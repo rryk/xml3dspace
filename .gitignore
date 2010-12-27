@@ -8,6 +8,9 @@ externals/lib/
 externals/*.htm
 externals/*.html
 
+# Proprietary models/scenes
+static/proprietary/
+
 # lighttpd logs
 lighttpd.cfg
 lighttpd.access.log
