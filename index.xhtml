@@ -83,6 +83,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             var loginName = null;
             var avatarURL = null;
             var avatarScale = null;
+            
+            if (driver == "XML3D") {
+                var xml3dLevel = "static/glass.xml3d";
+                var xml3dAvatar = "static/car.xml3d";
+            }
 
             function handleLogin(name, avatar) {
                 loginName = name;
@@ -114,7 +119,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 $('#container').hide();
 
                 var have_deps = true;
-                if (!Modernizr.webgl) {
+                if (driver == "GLGE" && !Modernizr.webgl) {
                     $.jnotify("Your browser doesn't support WebGL.", 'error', true);
                     have_deps = false;
                 }
@@ -134,7 +139,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
                 // automatic login for XML3D testing
                 if (driver == "XML3D")
-                    handleLogin("user", {url: "http://localhost/static/box.xml3d", scale: 1});
+                    handleLogin("user", {url: xml3dAvatar, scale: 1});
                 else
                     Kata.require([
                         // Pre login
@@ -155,15 +160,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     toolbar = new ToolbarUI($('#container'));
 
                 function graphicsReady () {
-                    window.kata = new Kata.MainThread(
-                        kata_base_offset + "scripts/BlessedScript.js",
-                        "Example.BlessedScript",
-                        {
+                    var scriptArgs = {
                         space: SpaceURL,
                         name: loginName,
                         scale : avatarScale,
                         visual: {mesh: avatarURL}
-                        });
+                    };
+                    
+                    if (driver == "XML3D") {
+                        scriptArgs["level"] = xml3dLevel;
+                        scriptArgs["avatar"] = xml3dAvatar;
+                    }
+                    
+                    window.kata = new Kata.MainThread(
+                        kata_base_offset + "scripts/BlessedScript.js",
+                        "Example.BlessedScript",
+                        scriptArgs);
                     graphics = new Kata.GraphicsSimulation(driver, window.kata.getChannel(), document.getElementById("container"));
                     session = new SessionUI(window.kata.getChannel());
                     if (driver != "XML3D") {
@@ -175,7 +187,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 }
 
                 if (driver == "XML3D")
-                    Kata.GraphicsSimulation.initializeDriver(driver, "static/glass.xml3d", graphicsReady);
+                    Kata.GraphicsSimulation.initializeDriver(driver, xml3dLevel, graphicsReady);
                 else
                     Kata.GraphicsSimulation.initializeDriver(driver, "static/glge_level.xml", graphicsReady);
             }

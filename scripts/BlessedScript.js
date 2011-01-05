@@ -19,11 +19,31 @@ Kata.require([
 
         this._scale = args.scale;
 
-        var xoff = Math.random() * 50.0;
-        var zoff = Math.random() * 50.0;
-        var angle = Math.random() * 2 * 3.14;
+        // set/randomize default location
+        if (args.level == "static/glass.xml3d") // Glass scene
+        {
+	        var xoff = Math.random() * 50;
+	        var yoff = 0;
+	        var zoff = Math.random() * 50;
+	        var angle = Math.random() * 2 * 3.14;
+        }
+        else if (args.level == "static/proprietary/saarlouis.xml3d") // Saarlouis scene
+        {
+        	var xoff = 54.98063070640073 + Math.random() * 50;
+	        var yoff = -24.48;
+	        var zoff = 36.66273670787716 + Math.random() * 10;
+	        var angle = Math.random() * 2 * 3.14;
+        }
+        else // GLGE driver
+        {
+        	var xoff = ((Math.random() - 0.5) * 2.0) * 5.0;
+        	var yoff = this._scale * 1.0;
+        	var zoff = ((Math.random() - 0.5) * 2.0) * 5.0;
+        	var angle = 0;
+        }
+        
         var loc = Kata.LocationIdentity();
-        loc.pos = [xoff, 0.0, zoff];
+        loc.pos = [xoff, yoff, zoff];
         loc.scale = [args.scale, args.scale, args.scale];
         loc.orient = Kata._helperQuatFromAxisAngle([0, 1, 0], angle);
         args.loc = loc;
