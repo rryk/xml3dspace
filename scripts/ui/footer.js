@@ -1,5 +1,5 @@
 /*  KataSpace
- *  sit.js
+ *  footer.js
  *
  *  Copyright (c) 2010, Ewen Cheslack-Postava
  *  All rights reserved.
@@ -30,53 +30,27 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-Kata.require([
-    'katajs/oh/GUISimulation.js'
-], function() {
+FooterUI = function(elem) {
+    var footerHeight = 0,
+    footerTop = 0,
+    $footer = elem;
 
-    var SUPER = Kata.GUISimulation.prototype;
+    positionFooter();
 
-    /** Tracks session events, presenting an error message if on disconnection. */
-    SitUI = function(channel, parent) {
-        SUPER.constructor.call(this, channel);
+    function positionFooter() {
+        footerHeight = $footer.height();
+        footerTop = ($(window).scrollTop()+$(window).height()-footerHeight)+"px";
 
-        this.sitting = false; // Whether we are sitting or not
+        if ( ($(document.body).height()+footerHeight) < $(window).height()) {
+            $footer
+                .css({ position: "absolute", top: footerTop });
+        } else {
+            $footer.css({ position: "static" });
+        }
 
-        var button_div = $('<div>Sit</div>').appendTo($('body'));
-        this.button = button_div;
-        button_div.button().click(
-            Kata.bind(this.toggleSit, this)
-        );
-        parent.addButton(button_div);
-        this.parent = parent;
-    };
-    Kata.extend(SitUI, SUPER);
+    }
 
-    // GUISimulation interface
-    SitUI.prototype.handleGUIMessage = function(evt) {
-        var revt = evt.event;
-        if (evt.msg !== 'sit') return;
-        this.sitting = revt.sitting;
-        this._updateButton();
-    };
-
-    SitUI.prototype._updateButton = function() {
-        var label = (this.sitting ? 'Stand Up' : 'Sit');
-        this.button.button( "option", "label", label );
-        this.parent.reflow();
-    };
-
-    SitUI.prototype.toggleSit = function() {
-        this.sitting = !this.sitting;
-        this._updateButton();
-        // Send the message
-        this.mChannel.sendMessage(
-            new Kata.ScriptProtocol.ToScript.GUIMessage(
-                {
-                    msg : 'sit',
-                    event : {}
-                }
-            )
-        );
-    };
-});
+    $(window)
+        .scroll(positionFooter)
+        .resize(positionFooter);
+};
