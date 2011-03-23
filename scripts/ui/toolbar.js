@@ -36,29 +36,31 @@ Kata.require([
 
     /** Tracks session events, presenting an error message if on disconnection. */
     ToolbarUI = function(on) {
-        var mDiv = $('<span id="toolbar" class="ui-widget-header ui-corner-all"></span>').appendTo($('body'));
+        this.mContainer = on;
+        var mDiv = $('<span id="toolbar" class="ui-widget-header ui-corner-all"></span>').appendTo(on);
         this.mDiv = mDiv;
+        this.mDiv.css('position', 'absolute');
+        this.mDiv.css('right', '10px');
+        this.mDiv.css('top', '10px');
+        this.mDiv.css('z-index', '10');
         this.mDiv.css('padding', '10px 4px');
-
-        var posHelp = function() {
-            mDiv.position(
-                { my: "right top", at: "right top", of: on, offset: "-10 10" }
-            );
-        };
-        this.posHelp = posHelp;
-        on.resize(posHelp);
-        $(window).scroll(posHelp).resize(posHelp);
-        posHelp();
     };
 
+    ToolbarUI.prototype.addElement = function(elem) {
+        this.mDiv.append(elem.addClass('gui-button').addClass('ui-corner-all').addClass('ui-widget').css({"padding":"3px"}));
+    }
     ToolbarUI.prototype.addButton = function(button) {
-        button.addClass('gui-button').width(100).height(25);
+        button.addClass('gui-button').attr("tabindex","0").width(100).height(25);
         this.mDiv.append(button);
-        this.posHelp();
+        var canvas = this.mContainer[0].getElementsByTagName("canvas");
+        if (canvas && canvas.length > 0) {
+            button[0].addEventListener("click", function() {
+                canvas[0].focus();
+	    });
+        }
     };
 
     ToolbarUI.prototype.reflow = function() {
-        this.posHelp();
     };
 
 });
