@@ -19,6 +19,8 @@ Kata.require([
         SUPER.constructor.call(this, channel, args, Kata.bind(this.updateRenderState, this));
 
         this._scale = args.loc.scale;
+        
+        this.level = args.level;
 
         this.connect(args, null, Kata.bind(this.connected, this));
 
@@ -142,12 +144,12 @@ Kata.require([
         presence.setQuery(0);
         
         // Select random offset from origin so people don't land on each other
-        if (args.level == "static/glass.xml3d") // Glass scene
+        if (this.level == "static/glass.xml3d") // Glass scene
         {
 	        var pos = [Math.random() * 50, 0, Math.random() * 50];
 	        var orient = Kata._helperQuatFromAxisAngle([0, 1, 0], Math.random() * 2 * 3.14);
         }
-        else if (args.level == "static/proprietary/saarlouis.xml3d") // Saarlouis scene
+        else if (this.level == "static/proprietary/saarlouis.xml3d") // Saarlouis scene
         {
             var pos = [54.98 + Math.random() * 50, -24.48, 36.66 + Math.random() * 10];
             var orient = Kata._helperQuatFromAxisAngle([0, 1, 0], Math.random() * 2 * 3.14);
