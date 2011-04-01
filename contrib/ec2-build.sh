@@ -37,7 +37,7 @@ cd sirikata.git && \
 make minimal-depends && \
 cd build/cmake && \
 cmake -DCMAKE_BUILD_TYPE=Release . && \
-make space tcpsst servermap-tabular core-local weight-exp weight-sqr weight-const space-local space-standard || \
+make || \
 bail "Couldn't build space server."
 
 # Checkout and "build" Kataspace
