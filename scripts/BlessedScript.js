@@ -146,8 +146,8 @@ Kata.require([
         // Select random offset from origin so people don't land on each other
         if (this.level == "static/glass.xml3d") // Glass scene
         {
-	        var pos = [Math.random() * 50, 0, Math.random() * 50];
-	        var orient = Kata._helperQuatFromAxisAngle([0, 1, 0], Math.random() * 2 * 3.14);
+            var pos = [Math.random() * 50, 0, Math.random() * 50];
+            var orient = Kata._helperQuatFromAxisAngle([0, 1, 0], Math.random() * 2 * 3.14);
         }
         else if (this.level == "static/proprietary/saarlouis.xml3d") // Saarlouis scene
         {
@@ -156,7 +156,7 @@ Kata.require([
         }
         else // GLGE driver
         {
-        	var pos = [((Math.random() - 0.5) * 2.0) * 5.0, this._scale * 1.0, ((Math.random() - 0.5) * 2.0) * 5.0];
+            var pos = [((Math.random() - 0.5) * 2.0) * 5.0, this._scale * 1.0, ((Math.random() - 0.5) * 2.0) * 5.0];
             var orient = Kata._helperQuatFromAxisAngle([0, 1, 0], 0);
         }
         
@@ -518,9 +518,16 @@ Kata.require([
         if (msg.msg == "keydown") {
             var avMat = Kata.QuaternionToRotation(this.mPresence.predictedOrientation(new Date()));
             var avSpeed = 1;
+            var full_rot_seconds = 10.0;
             
             if (msg.shiftKey)
+            {
                 avSpeed *= 10;
+                full_rot_seconds /= 3;
+                this.animationSpeed = 5;
+            }
+            else
+                this.animationSpeed = 1;
             
             var avXX = avMat[0][0] * avSpeed;
             var avXY = avMat[0][1] * avSpeed;
@@ -540,7 +547,7 @@ Kata.require([
             if (this.keyIsDown[this.Keys.DOWN]) {
                 this.mPresence.setVelocity([avZX, avZY, avZZ]);
             }
-            var full_rot_seconds = 10.0;
+            
             if (this.keyIsDown[this.Keys.LEFT]) {
                 this.mPresence.setAngularVelocity(
                     Kata.Quaternion.fromAxisAngle([0, 1, 0], 2.0*Math.PI/full_rot_seconds)
@@ -604,10 +611,22 @@ Kata.require([
         var new_anim = (is_mobile ? cur_state.forward : cur_state.idle);
 
         if (cur_anim != new_anim) {
-            this.animate(presence, remote, new_anim);
+            this.animateAdv(presence, remote, new_anim, this.animationSpeed);
             remote.cur_anim = new_anim;
         }
     };
+
+    Example.BlessedScript.prototype.animateAdv = function(presence, remotePresence, animation, speed){
+        var msg = new Kata.ScriptProtocol.FromScript.GFXAnimateAdv(
+            presence.space(),
+            presence.id(),
+            remotePresence,
+            animation,
+            speed
+        );
+        this._sendHostedObjectMessage(msg);
+    }
+
     Example.BlessedScript.prototype._calcCamPos = function() {
         var orient = new Kata.Quaternion(this._calcCamOrient());
         var pos = this.mPresence.predictedPosition(new Date());

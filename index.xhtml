@@ -189,10 +189,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                         createui = new CreateUI(window.kata.getChannel(), toolbar);
                         helpui = new HelpUI(window.kata.getChannel(), toolbar);
                         transformUI = new TransformUI(window.kata.getChannel());
+                        chats = new ChatUI(window.kata.getChannel(), loginName, 300);
+                        chats.create("Chat");
                     }
-                    
-                    chats = new ChatUI(window.kata.getChannel(), loginName, 300);
-                    chats.create("Chat");
                 }
 
                 if (driver == "XML3D")
