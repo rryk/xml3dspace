@@ -518,6 +518,10 @@ Kata.require([
         if (msg.msg == "keydown") {
             var avMat = Kata.QuaternionToRotation(this.mPresence.predictedOrientation(new Date()));
             var avSpeed = 1;
+            
+            if (msg.shiftKey)
+                avSpeed *= 10;
+            
             var avXX = avMat[0][0] * avSpeed;
             var avXY = avMat[0][1] * avSpeed;
             var avXZ = avMat[0][2] * avSpeed;
@@ -564,7 +568,7 @@ Kata.require([
 
     Example.BlessedScript.prototype._getVerticalOffset = function(remote) {
         // FIXME there should be a better way of deciding this
-        return (remote._animatedState && (remote._animatedState.idle == 'sit')) ? 0.75 : 1.0;
+        return (remote._animatedState && (remote._animatedState.idle == 'sit')) ? 0.75 : 1.4;
     };
     Example.BlessedScript.prototype._getHorizontalOffset = function() {
         return 3;
