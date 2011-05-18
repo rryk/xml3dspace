@@ -49,7 +49,7 @@ LoginUI = function(dialog_div, avatars, cb) {
     this.mNameEntry = document.createElement('input');
     this.mNameEntry.setAttribute('id', '__login');
     this.mNameEntry.setAttribute('type', 'text');
-    this.mNameEntry.setAttribute('size', '33');
+    this.mNameEntry.setAttribute('size', '40');
     $(this.mNameEntry).keypress(
         function(event) {
             if (event.keyCode == '13')
@@ -94,7 +94,7 @@ LoginUI = function(dialog_div, avatars, cb) {
     this.mDialogDiv.dialog(
         {
 	    resizable: false,
-	    modal: false,
+	    modal: true,
             closeOnEscape: false,
             draggable: false,
 	    buttons: {
@@ -107,7 +107,7 @@ LoginUI = function(dialog_div, avatars, cb) {
                     self.mDialogDiv.dialog("open");
             },
             open: function(event, ui) { $(this).parent().children().children('.ui-dialog-titlebar-close').hide(); },
-            width: 400,
+            width: 435,
             height: 450
 	}
     );

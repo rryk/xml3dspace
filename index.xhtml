@@ -40,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </script>
         <!-- Chat UI -->
         <link rel="stylesheet" href="externals/css/smoothness/jquery-ui-1.8.11.custom.css" />
-        <script type="text/javascript" src="externals/js/jquery-1.4.4.min.js">
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js">
         </script>
         <script type="text/javascript" src="externals/js/jquery-ui-1.8.11.custom.min.js">
         </script>
@@ -94,6 +94,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 avatarURL = avatar.url;
                 avatarScale = avatar.scale;
 
+                xml3dAvatar = avatar;
+
                 Kata.require([
                     // Post login
                     'katajs/oh/MainThread.js',
@@ -112,14 +114,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     kata_base_offset + 'scripts/ui/toolbar.js',
                     kata_base_offset + 'scripts/ui/sit.js',
                     kata_base_offset + 'scripts/ui/create.js',
-                    kata_base_offset + 'scripts/ui/help.js'
+                    kata_base_offset + 'scripts/ui/help.js',
+                    kata_base_offset + 'scripts/ui/animlib.js'
                 ], function() {
                     loadGFX();
                 });
             }
 
             function onDocReady() {
-                $('#container').hide();
+                //$('#container').hide();
 
                 var have_deps = true;
                 if (driver == "GLGE" && !Modernizr.webgl) {
@@ -141,22 +144,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 }
 
                 // automatic login for XML3D testing
-                if (driver == "XML3D")
-                    handleLogin("user", {url: xml3dAvatar, scale: 1});
-                else
-                    Kata.require([
-                        // Pre login
-                        kata_base_offset + 'scripts/ui/login.js',
-                        kata_base_offset + 'scripts/ui/footer.js'
-                    ], function() {
-                        loginui = new LoginUI( $("#login"), Avatars, handleLogin);
+                Kata.require([
+                    // Pre login
+                    kata_base_offset + 'scripts/ui/login.js',
+                    kata_base_offset + 'scripts/ui/footer.js'
+                ], function() {
+                    loginui = new LoginUI( $("#login"), Avatars, handleLogin);
 
-                        $('#title').append(Title);
+                    //$('#title').append(Title);
 
-                        footerui = new FooterUI(
-                            $(FooterContent())
-                        );
-                    });
+                    //footerui = new FooterUI(
+                    //    $(FooterContent())
+                    //);
+                });
             }
 
             function loadGFX(){
@@ -189,9 +189,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                         createui = new CreateUI(window.kata.getChannel(), toolbar);
                         helpui = new HelpUI(window.kata.getChannel(), toolbar);
                         transformUI = new TransformUI(window.kata.getChannel());
-                        chats = new ChatUI(window.kata.getChannel(), loginName, 300);
-                        chats.create("Chat");
-                    }
+                    } 
+                    else if (driver == "XML3D")
+                        animlibui = new AnimLibUI(window.kata.getChannel());
+
+                    chats = new ChatUI(window.kata.getChannel(), loginName, 300);
+                    chats.create("Chat");
                 }
 
                 if (driver == "XML3D")

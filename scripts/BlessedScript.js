@@ -8,6 +8,7 @@ Kata.require([
 // FIXME we want to be able to specify a centralized offset so we
 // don't have to have this ../../ stuff here.
     '../../scripts/behavior/chat/Chat.js',
+    '../../scripts/behavior/animlib/AnimLib.js',
     '../../scripts/behavior/animated/Animated.js'
 ], function(){
     if (typeof(Example) === "undefined") {
@@ -38,6 +39,7 @@ Kata.require([
                 Kata.bind(this.chatExitEvent, this),
                 Kata.bind(this.chatMessageEvent, this)
             );
+        this.mAnimLibBehaviour = new Kata.Behavior.AnimLib(this);
         this.mAnimatedBehavior =
             new Kata.Behavior.Animated(
                 this,
@@ -364,6 +366,20 @@ Kata.require([
         });
     };
 
+    Example.BlessedScript.prototype.handleCreateAnimMessage = function(msg, presence, remotePresence) {
+        var gfxmsg = new Kata.ScriptProtocol.FromScript.GFXCreateAnim(
+            this.mPresence.space(),
+            this.mPresence.id(),
+            this.mPresence,
+            msg.name,
+            msg.data,
+            msg.offset,
+            msg.len,
+            msg.repeat
+        );
+        this._sendHostedObjectMessage(gfxmsg);
+    };
+
     Example.BlessedScript.GFX_TIMESTAMP_OFFSET = 5000;
 
     Example.BlessedScript.prototype._handleGUIMessage = function (channel, msg) {
@@ -376,6 +392,8 @@ Kata.require([
         }
         if (msg.msg == 'chat')
             this.handleChatGUIMessage(msg);
+        if (msg.msg == 'createanim')
+            this.handleCreateAnimMessage(msg);
         if (msg.msg == 'create') {
             Kata.log("Creating object with visual "+msg.event.visual+" orient "+msg.event.orient);
             this.handleCreateObject(msg.event.visual, msg.event.pos, msg.event.orient);

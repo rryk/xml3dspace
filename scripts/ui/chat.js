@@ -68,7 +68,7 @@ Kata.require([
                                  offset : 200,
                                  width : this.mWidth,
                                  messageSent : this._getMessageSentHandler(),
-                                 boxClosed : this._getClosedHandler()
+                                 boxClosed : this._getClosedHandler(),
                                 });
         this.mChats.push(divIDstr);
 
