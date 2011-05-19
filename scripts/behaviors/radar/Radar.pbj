@@ -1,0 +1,18 @@
+"pbj-0.0.3"
+
+package Radar.Protocol;
+
+// Introduces radar to the object
+message Intro {    
+}
+
+// Object's response to intro after which radar starts to track the object
+message Track {
+    required string name = 1;
+}
+
+// Container message
+message Container {
+    optional Intro intro = 1;
+    optional Track track = 2;
+}

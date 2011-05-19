@@ -15,9 +15,12 @@
         <!-- configuration -->
         <script type="text/javascript"><![CDATA[
             var staticWorldMesh = "static/meshes/staticWorld.xml3d";
+            var worldBounds = [-10, 10, 0, 0, -10, 10];
             var lemmingMesh = "static/meshes/lemming.xml3d";
+            var lemmingSpeed = 3;
+            var lemmingCornerDetectionThreshold = 2;
             
-            var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
+            Kata.BASE_OFFSET = "../../"; // offset from the externals/katajs/ back to the root dir
             Kata.WEB_WORKERS_ENABLED = false;
         ]]></script>
         
@@ -44,9 +47,16 @@
                     'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js' // allows to use sirikata://.../ protocol
                 ], function() {
                     window.kata = new Kata.MainThread(
-                        kata_base_offset + "scripts/WorldScript.js", 
+                        Kata.BASE_OFFSET + "scripts/WorldScript.js", 
                         "Lemmings.WorldScript",
-                        {space: address, visual: mesh}
+                        {
+                            space: address, 
+                            visual: mesh, 
+                            worldBounds: worldBounds, 
+                            lemmingMesh: lemmingMesh,
+                            lemmingSpeed: lemmingSpeed,
+                            lemmingCornerDetectionThreshold: lemmingCornerDetectionThreshold
+                        }
                     )
                 })
             }
@@ -56,13 +66,14 @@
         <link type="text/css" href="style/style-host.css" rel="stylesheet" media="all" />
     </head>
     <body>
-        <div class="in-development">CONTROL PANEL IS <br/> UNDER DEVELOPMENT</div>
+        <!--<div class="in-development">CONTROL PANEL IS <br/> UNDER DEVELOPMENT</div>-->
         <div id="buttons">
             <label for="server-address">Server address:</label>
-            <input id="server-address" value="sirikata://green.cg.uni-saarland.de:7777/" />
+            <input id="server-address" value="sirikata://localhost:7777/" />
             <button id="connectButton" onclick="connect($('#server-address').val(), staticWorldMesh)">Connect</button>
             <button id="disconnectButton" disabled="true">Disconnect</button>
             <button id="createLemmingButton" disabled="true">Create lemming</button>
         </div>
+        <div id="radar" />
     </body>
 </html>
