@@ -19,9 +19,11 @@
             var lemmingMesh = "static/meshes/lemming.xml3d";
             var lemmingSpeed = 3;
             var lemmingCornerDetectionThreshold = 2;
+            var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
             
-            Kata.BASE_OFFSET = "../../"; // offset from the externals/katajs/ back to the root dir
+            // configure Web Workers
             Kata.WEB_WORKERS_ENABLED = false;
+            Kata.bootstrapWorker = window.location.href + "/boostrapWorker.js";
         ]]></script>
         
         <!-- main script -->
@@ -44,10 +46,10 @@
                 
                 Kata.require([
                     'katajs/oh/MainThread.js', // allows to create MainThread object
-                    'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js' // allows to use sirikata://.../ protocol
+                    'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // allows to use sirikata://.../ protocol
                 ], function() {
                     window.kata = new Kata.MainThread(
-                        Kata.BASE_OFFSET + "scripts/WorldScript.js", 
+                        kata_base_offset + "scripts/WorldScript.js", 
                         "Lemmings.WorldScript",
                         {
                             space: address, 

@@ -2,7 +2,8 @@ if (typeof(Lemmings) === "undefined") Lemmings = {};
 
 Kata.require([
     'katajs/oh/GraphicsScript.js',
-    Kata.BASE_OFFSET + 'scripts/Tools.js'
+    kata_base_offset + 'scripts/Tools.js',
+    kata_base_offset + 'scripts/behaviors/radar/Radar.js'
 ], function() {
 
     var SUPER = Kata.GraphicsScript.prototype;
@@ -12,6 +13,9 @@ Kata.require([
         
         // connect to the space server
         this.connect(args, null, Kata.bind(this.connected, this));
+        
+        // add trackable radar for this lemming
+        this.radar = new Lemmings.Behavior.Radar(this, false);
         
         // save lemming's configuration
         this.name = args.name;
@@ -35,6 +39,11 @@ Kata.require([
         
         // start movement (no bounds yet)
         this.changeOrientation(Lemmings.BoundType.NONE);
+    }
+    
+    // returns lemming's name
+    Lemmings.LemmingScript.prototype.getName = function() {
+        return this.name;
     }
     
     // change lemming's orientation
@@ -106,5 +115,5 @@ Kata.require([
                     "velocity=[" + loc.vel[0] + ", " + loc.vel[1] + ", " + loc.vel[2] + "].");
     }
     
-}, Kata.BASE_OFFSET + "scripts/LemmingScript.js");
+}, kata_base_offset + "scripts/LemmingScript.js");
 

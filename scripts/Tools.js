@@ -66,4 +66,4 @@ Kata.require([
         NONE: 9
     };
 
-}, Kata.BASE_OFFSET + "scripts/LemmingTools.js");
+}, kata_base_offset + "scripts/LemmingTools.js");

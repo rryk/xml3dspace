@@ -4,13 +4,13 @@ if (typeof(Lemmings.Behavior) === "undefined") Lemmings.Behavior = {};
 Kata.require([
     'externals/protojs/protobuf.js',
     'externals/protojs/pbj.js',
-    Kata.BASE_OFFSET + 'scripts/behavior/animated/Animated.pbj.js'
+    kata_base_offset + 'scripts/behaviors/radar/Radar.pbj.js'
 ], function() {
 
-    /** Constructs new radar behaviour.
+    /** Constructs new radar behavior.
      *   @param parent parent object script
      */
-    Lemmings.Behavior.Radar = function(parent) {
+    Lemmings.Behavior.Radar = function(parent, isTracking) {
         // save parent object script and register with it
         this.parent = parent;
         this.parent.addBehavior(this);
@@ -19,22 +19,25 @@ Kata.require([
         this.trackedObjs = {};
         
         // init ODP ports array
-        this.mODPPorts = {};
+        this.odpPorts = {};
+        
+        // save the isTrackable flag
+        this.isTracking = isTracking;
     }
     
     // Port used for communication with radar
     Lemmings.Behavior.Radar.prototype.ProtocolPort = 15;
     
     /** Returns ODP port for radar service on a given presence (per space) */
-    Lemmings.Behavior.prototype.getODPPort(presence) {
-        if (!this.mODPPorts[presence])
+    Lemmings.Behavior.Radar.prototype.getODPPort = function(presence) {
+        if (!this.odpPorts[presence])
         {
             var odpPort = presence.bindODPPort(this.ProtocolPort);
             odpPort.receive(Kata.bind(this.handleMessage, this, presence));
-            this.mODPPorts[presence] = odpPort;
+            this.odpPorts[presence] = odpPort;
         }
         
-        return this.mODPPorts[presence];
+        return this.odpPorts[presence];
     }
     
     /** Reacts to new remote presences (other objects than the one we are registered with)
@@ -50,7 +53,7 @@ Kata.require([
             containerMsg.intro = introMsg;
             
             // send the intro message
-            this.getODPPort().send(remote.endpoint(this.ProtocolPort), this.serializeMessage(containerMsg));
+            this.getODPPort(presence).send(remote.endpoint(this.ProtocolPort), this.serializeMessage(containerMsg));
         } else {
             if (this.trackedObjs[remote.presenceID()])
                 this.stopTracking(presence, remote.presenceID());
@@ -73,7 +76,13 @@ Kata.require([
      *   @param presence new presence
      */
     Lemmings.Behavior.Radar.prototype.newPresence = function(presence) {
-        // TODO: if first presence - display radar
+        if (this.isTracking) {
+            // TODO: if first presence - display radar
+        }
+        
+        // start listening to messages
+        this.getODPPort(presence);
+        
         return;
     }
     
@@ -81,13 +90,14 @@ Kata.require([
      *   @param presence invalidated presence
      */
     Lemmings.Behavior.Radar.prototype.presenceInvalidated = function(presence) {
-        // TODO: if last presence - hide radar
-        // TODO: remove all tracked object from the same space server
-        // TODO: stop tracking if last remote presence was removed
+        if (this.isTracking) {
+            // TODO: if last presence - hide radar, stop tracking
+            // TODO: remove all tracked object from the same space server
+        }
         
         // close and remove port
         this.getODPPort(presence).close();
-        delete this.mODPPorts[presence];
+        delete this.odpPorts[presence];
         
         return;
     }
@@ -130,9 +140,22 @@ Kata.require([
         var containerMsg = new Radar.Protocol.Container();
         containerMsg.ParseFromStream(new PROTO.ByteArrayStream(payload));
         
-        if (containerMsg.hasField("track")) {
+        console.log("message to radar behavior: ");
+        console.log(containerMsg);
+        
+        if (this.isTracking && containerMsg.HasField("track")) {
             this.track(presence, src.presenceID(), containerMsg.track);
+        } else if (!this.isTracking && containerMsg.HasField("intro")) {
+            // create an track message
+            var trackMsg = new Radar.Protocol.Track();
+            trackMsg.name = this.parent.getName();
+            
+            var containerMsg = new Radar.Protocol.Container();
+            containerMsg.track = trackMsg;
+            
+            // send the track message
+            this.getODPPort(presence).send(src, this.serializeMessage(containerMsg));
         }
     }
 
-}, Kata.BASE_OFFSET + 'scripts/behaviours/radar/RadarBehavior.js');
+}, kata_base_offset + 'scripts/behaviors/radar/Radar.js');
