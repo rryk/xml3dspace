@@ -1,12 +1,12 @@
 if (typeof(Lemmings) === "undefined") Lemmings = {};
 
 Kata.require([
-    'katajs/oh/GraphicsScript.js',
+    'katajs/oh/Script.js',
     kata_base_offset + 'scripts/Tools.js',
     kata_base_offset + 'scripts/behaviors/radar/Radar.js'
 ], function() {
 
-    var SUPER = Kata.GraphicsScript.prototype;
+    var SUPER = Kata.Script.prototype;
     Lemmings.LemmingScript = function(channel, args) {
         // call parent constructor
         SUPER.constructor.call(this, channel, args, function() {});

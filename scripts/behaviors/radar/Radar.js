@@ -17,6 +17,7 @@ Kata.require([
         
         // init tracked objects array
         this.trackedObjs = {};
+        this.trackedObjsCount = 0;
         
         // init ODP ports array
         this.odpPorts = {};
@@ -56,7 +57,7 @@ Kata.require([
             this.getODPPort(presence).send(remote.endpoint(this.ProtocolPort), this.serializeMessage(containerMsg));
         } else {
             if (this.trackedObjs[remote.presenceID()])
-                this.stopTracking(presence, remote.presenceID());
+                this.stopTrackingRemote(presence, remote.presenceID());
         }
         
         return;
@@ -102,26 +103,94 @@ Kata.require([
         return;
     }
     
-    /** Starts tracking remote presence (currently only lemmings).
+    /** Starts tracking remote presence (currently only lemmings). This is only called for tracking radar.
      *   @param presence our presence (of world object)
      *   @param remotePresenceID id of remote presence to be tracked
      */
-    Lemmings.Behavior.Radar.prototype.track = function(presence, remotePresenceID, msg) {
-        // TODO: add remote presence for tracking
-        // TODO: start tracking if first remote presence was added
+    Lemmings.Behavior.Radar.prototype.trackRemote = function(presence, remotePresenceID, msg) {
+        // add remote presence for tracking
+        var remote = this.parent.getRemotePresence(remotePresenceID);
+        this.trackedObjs[remotePresenceID] = remote;
+        this.trackedObjsCount++;
         
-        Kata.log("Started tracking " + msg.name);
+        // start tracking if first remote presence was added
+        if (this.trackedObjsCount == 1)
+            this.startTracking();
+            
+        // create SVG circle for the object
+        var svgCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        svgCircle.setAttribute("r", "10");
+        svgCircle.setAttribute("cx", "-10");
+        svgCircle.setAttribute("cy", "-10");
+        $("#radar > svg").append(svgCircle);
+        
+        // svae SVG circle in remote record
+        remote.svgCircle = svgCircle;
         
         return;
     }
     
-    /** Stops tracking remote presence.
+    /** Starts tracking process. This is only called for tracking radar. */
+    Lemmings.Behavior.Radar.prototype.startTracking = function() {
+        // create canvas
+        $("#radar").append("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
+        
+        // start regular updates
+        this.trackingInterval = window.setInterval(Kata.bind(this.updateRadar, this), 50);
+    }
+    
+    /** Stops tracking process. This is only called for tracking radar. */
+    Lemmings.Behavior.Radar.prototype.stopTracking = function() {
+        // stop regular updates
+        window.clearInterval(this.trackingInterval);
+        
+        // destroy canvas
+        $("#radar").empty();
+    }
+    
+    /** Maps 3D world coordinates to 2D canvas (X->X, Z->Y, Y is ignored) */
+    Lemmings.Behavior.Radar.prototype.updateSVGPosition = function(objRemote, time) {
+        var objPos = objRemote.position(time);
+        
+        var x = 600 * (objPos[0] - this.parent.worldBounds[0]) / (this.parent.worldBounds[1] - this.parent.worldBounds[0]);
+        var y = 600 * (objPos[2] - this.parent.worldBounds[4]) / (this.parent.worldBounds[5] - this.parent.worldBounds[4]);
+        
+        objRemote.svgCircle.setAttribute("cx", x);
+        objRemote.svgCircle.setAttribute("cy", y);
+    }
+    
+    /** Updates radar display */
+    Lemmings.Behavior.Radar.prototype.updateRadar = function() {
+        // select the moment to compute object positions for
+        var now = new Date();
+        
+        // update all tracked objects
+        for (objid in this.trackedObjs)
+            this.updateSVGPosition(this.trackedObjs[objid], now);
+    }
+    
+    /** Stops tracking remote presence. This is only called for tracking radar.
      *   @param presence our presence (of world object)
      *   @param remotePresenceID id of remote presence to be tracked
      */
-    Lemmings.Behavior.Radar.prototype.stopTracking = function(presence, remotePresenceID) {
-        // TODO: remove remote presence from tracking array
-        // TODO: stop tracking if last remote presence is removed
+    Lemmings.Behavior.Radar.prototype.stopTrackingRemote = function(presence, remotePresenceID) {
+        if (!this.trackedObjs[remotePresenceID])
+            Kata.warn("Stop tracking request for non-tracked object.");
+        else
+        {
+            // remove SVG object from the DOM
+            $(this.trackedObjs[remotePresenceID].svgCircle).remove();
+            delete this.trackedObjs[remotePresenceID].svgCircle;
+            
+            // remove remote presence from tracking array
+            delete this.trackedObjs[remotePresenceID];
+            this.trackedObjsCount--;
+        }
+        
+        // stop tracking if last remote presence is removed
+        if (this.trackedObjsCount == 0)
+            this.stopTracing();
+        
         
         Kata.log("Stopped tracking " + msg.name);
         
@@ -140,12 +209,9 @@ Kata.require([
         var containerMsg = new Radar.Protocol.Container();
         containerMsg.ParseFromStream(new PROTO.ByteArrayStream(payload));
         
-        console.log("message to radar behavior: ");
-        console.log(containerMsg);
-        
-        if (this.isTracking && containerMsg.HasField("track")) {
-            this.track(presence, src.presenceID(), containerMsg.track);
-        } else if (!this.isTracking && containerMsg.HasField("intro")) {
+        if (this.isTracking && containerMsg.HasField("track")) { // for tracking radar
+            this.trackRemote(presence, src.presenceID(), containerMsg.track);
+        } else if (!this.isTracking && containerMsg.HasField("intro")) { // for trackable radar
             // create an track message
             var trackMsg = new Radar.Protocol.Track();
             trackMsg.name = this.parent.getName();

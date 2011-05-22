@@ -16,10 +16,21 @@ body {
 }
 
 #buttons {
-    padding: 20px;
+    margin: 20px;
 }
 
 #buttons input {
     border: 1px solid black;
     width: 300px;
+}
+
+#radar svg {
+    margin: 20px;
+    width: 600px;
+    height: 600px;
+    border: 1px black solid;
+}
+
+#radar svg circle {
+    fill: red;
 }
