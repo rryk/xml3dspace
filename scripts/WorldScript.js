@@ -17,6 +17,7 @@ Kata.require([
         // save world's configuration
         this.worldBounds = args.worldBounds; // [minX, maxX, minY, maxY, minZ, maxZ]
         this.lemmingMesh = args.lemmingMesh;
+        this.boxMesh = args.boxMesh;
         this.lemmingSpeed = args.lemmingSpeed;
         this.lemmingCornerDetectionThreshold = args.lemmingCornerDetectionThreshold;
         
@@ -47,13 +48,19 @@ Kata.require([
         // set click handler for create-lemming button and enable it
         $("#createLemmingButton").click(Kata.bind(this.createLemming, this));
         $("#createLemmingButton").removeAttr("disabled");
+        
+        // set click handler for creaet-box button and enable it
+        $("#createBoxButton").click(Kata.bind(this.createBox, this));
+        $("#createBoxButton").removeAttr("disabled");
     }
     
     // disconnect from the server
     Lemmings.WorldScript.prototype.disconnect = function(presence) {
         // disable create-leming and disconnect buttons
-        $("#disconnectButton").attr("disabled", true);
-        $("#createLemmingButton").attr("disabled", true);
+        $("#disconnectButton").attr("disabled", "disabled");
+        $("#createLemmingButton").attr("disabled", "disabled");
+        $("#createBoxButton").attr("disabled", "disabled");
+        $("#connectButton").removeAttr("disabled");
         
         // disconnect from the space server
         // FIXME: space server doesn't report disconnect
@@ -93,6 +100,19 @@ Kata.require([
                 posBounds: this.worldBounds, // position bounds
                 speed: this.lemmingSpeed, // lemming's speed
                 cornerDetectionThreshold: this.lemmingCornerDetectionThreshold, // corner detection threshold
+            });
+    }
+    
+    // create a box
+    Lemmings.WorldScript.prototype.createBox = function() {
+        this.createObject(
+            kata_base_offset + "scripts/BoxScript.js", 
+            "Lemmings.BoxScript",
+            {
+                space: this.space, // space to connect to
+                mesh: this.boxMesh, // box's mesh
+                loc: Lemmings.randomizePositionInXZ(this.worldBounds), // initial location
+                posBounds: this.worldBounds, // position bounds
             });
     }
     

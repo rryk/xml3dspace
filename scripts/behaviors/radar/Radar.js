@@ -78,7 +78,8 @@ Kata.require([
      */
     Lemmings.Behavior.Radar.prototype.newPresence = function(presence) {
         if (this.isTracking) {
-            // TODO: if first presence - display radar
+            // create canvas (assume one space server)
+            $("#radar").append("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
         }
         
         // start listening to messages
@@ -92,8 +93,12 @@ Kata.require([
      */
     Lemmings.Behavior.Radar.prototype.presenceInvalidated = function(presence) {
         if (this.isTracking) {
-            // TODO: if last presence - hide radar, stop tracking
-            // TODO: remove all tracked object from the same space server
+            // stop tracking all objects (assume one space server)
+            for (var i in this.trackedObjs)
+                this.stopTrackingRemote(presence, i);
+            
+            // remove radar
+            $("#radar").empty();
         }
         
         // close and remove port
@@ -117,35 +122,47 @@ Kata.require([
         if (this.trackedObjsCount == 1)
             this.startTracking();
             
-        // create SVG circle for the object
-        var svgCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        svgCircle.setAttribute("r", "10");
-        svgCircle.setAttribute("cx", "-10");
-        svgCircle.setAttribute("cy", "-10");
-        $("#radar > svg").append(svgCircle);
+        // create SVG object
+        if (msg.type == "lemming") {
+            var svgObj = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            svgObj.setAttribute("r", "5");
+            svgObj.setAttribute("class", "lemming");
+            svgObj.setPosition = function(x, y) {
+                svgObj.setAttribute("cx", x);
+                svgObj.setAttribute("cy", y);
+            }
+            svgObj.setPosition(-10, -10); // hide it beyond the canvas until we will get initial position
+        } else if (msg.type == "box") {
+            var svgObj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            svgObj.setAttribute("width", "20");
+            svgObj.setAttribute("height", "20");
+            svgObj.setAttribute("class", "box");
+            svgObj.setPosition = function(x, y) {
+                svgObj.setAttribute("x", x);
+                svgObj.setAttribute("y", y);
+            }
+            svgObj.setPosition(-10, -10); // hide it beyond the canvas until we will get initial position
+        }
         
-        // svae SVG circle in remote record
-        remote.svgCircle = svgCircle;
+        // append svg object to the dom
+        $("#radar > svg").append(svgObj);
+        
+        // save SVG object in remote record
+        remote.svgObj = svgObj;
         
         return;
     }
     
     /** Starts tracking process. This is only called for tracking radar. */
     Lemmings.Behavior.Radar.prototype.startTracking = function() {
-        // create canvas
-        $("#radar").append("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
-        
         // start regular updates
-        this.trackingInterval = window.setInterval(Kata.bind(this.updateRadar, this), 50);
+        this.trackingInterval = window.setInterval(Kata.bind(this.updateRadar, this), 100);
     }
     
     /** Stops tracking process. This is only called for tracking radar. */
     Lemmings.Behavior.Radar.prototype.stopTracking = function() {
         // stop regular updates
         window.clearInterval(this.trackingInterval);
-        
-        // destroy canvas
-        $("#radar").empty();
     }
     
     /** Maps 3D world coordinates to 2D canvas (X->X, Z->Y, Y is ignored) */
@@ -155,8 +172,7 @@ Kata.require([
         var x = 600 * (objPos[0] - this.parent.worldBounds[0]) / (this.parent.worldBounds[1] - this.parent.worldBounds[0]);
         var y = 600 * (objPos[2] - this.parent.worldBounds[4]) / (this.parent.worldBounds[5] - this.parent.worldBounds[4]);
         
-        objRemote.svgCircle.setAttribute("cx", x);
-        objRemote.svgCircle.setAttribute("cy", y);
+        objRemote.svgObj.setPosition(x, y);
     }
     
     /** Updates radar display */
@@ -179,8 +195,8 @@ Kata.require([
         else
         {
             // remove SVG object from the DOM
-            $(this.trackedObjs[remotePresenceID].svgCircle).remove();
-            delete this.trackedObjs[remotePresenceID].svgCircle;
+            $(this.trackedObjs[remotePresenceID].svgObj).remove();
+            delete this.trackedObjs[remotePresenceID].svgObj;
             
             // remove remote presence from tracking array
             delete this.trackedObjs[remotePresenceID];
@@ -214,7 +230,11 @@ Kata.require([
         } else if (!this.isTracking && containerMsg.HasField("intro")) { // for trackable radar
             // create an track message
             var trackMsg = new Radar.Protocol.Track();
-            trackMsg.name = this.parent.getName();
+            trackMsg.type = this.parent.getType();
+            
+            // set name if available
+            if (this.parent.getName)
+                trackMsg.name = this.parent.getName();
             
             var containerMsg = new Radar.Protocol.Container();
             containerMsg.track = trackMsg;

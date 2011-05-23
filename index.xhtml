@@ -15,15 +15,16 @@
         <!-- configuration -->
         <script type="text/javascript"><![CDATA[
             var staticWorldMesh = "static/meshes/staticWorld.xml3d";
-            var worldBounds = [-10, 10, 0, 0, -10, 10];
             var lemmingMesh = "static/meshes/lemming.xml3d";
+            var boxMesh = "static/meshes/box.xml3d";
+            var worldBounds = [-10, 10, 0, 0, -10, 10];
             var lemmingSpeed = 3;
             var lemmingCornerDetectionThreshold = 2;
             var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
             
             // configure Web Workers
             Kata.WEB_WORKERS_ENABLED = false;
-            Kata.bootstrapWorker = window.location.href + "/boostrapWorker.js";
+            //Kata.bootstrapWorker = window.location.href + "/boostrapWorker.js";
         ]]></script>
         
         <!-- main script -->
@@ -57,7 +58,8 @@
                             worldBounds: worldBounds, 
                             lemmingMesh: lemmingMesh,
                             lemmingSpeed: lemmingSpeed,
-                            lemmingCornerDetectionThreshold: lemmingCornerDetectionThreshold
+                            lemmingCornerDetectionThreshold: lemmingCornerDetectionThreshold,
+                            boxMesh: boxMesh
                         }
                     )
                 })
@@ -75,6 +77,7 @@
             <button id="connectButton" onclick="connect($('#server-address').val(), staticWorldMesh)">Connect</button>
             <button id="disconnectButton" disabled="true">Disconnect</button>
             <button id="createLemmingButton" disabled="true">Create lemming</button>
+            <button id="createBoxButton" disabled="true">Create box</button>
         </div>
         <div id="radar" />
     </body>

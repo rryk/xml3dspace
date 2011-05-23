@@ -8,7 +8,8 @@ message Intro {
 
 // Object's response to intro after which radar starts to track the object
 message Track {
-    required string name = 1;
+    optional string name = 1; // object's name
+    required string type = 2; // object's type, e.g. lemming, box etc.
 }
 
 // Container message

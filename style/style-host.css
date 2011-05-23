@@ -31,6 +31,11 @@ body {
     border: 1px black solid;
 }
 
-#radar svg circle {
+#radar svg .lemming {
     fill: red;
+}
+
+#radar svg .box {
+    fill: black;
+    stroke: none;
 }

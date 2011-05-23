@@ -46,6 +46,11 @@ Kata.require([
         return this.name;
     }
     
+    // return object's type
+    Lemmings.LemmingScript.prototype.getType = function() {
+        return "lemming";
+    }
+    
     // change lemming's orientation
     Lemmings.LemmingScript.prototype.changeOrientation = function(bound) {
         // generate new orientation
@@ -55,51 +60,49 @@ Kata.require([
         // send a location update to the space server
         this.presence.setLocation(loc);
         
-        // TODO: introduce MINX_MINZ, MINX_MAXZ, MAXX_MINZ, MAXX_MAXZ bounds so that lemmings don't get trapped in the corners
-        
         // compute bounds' reach time for X and Z axes
         if (loc.vel[0] > 0) {
             var boundReachTime1 = (this.posBounds[1] - loc.pos[0]) / loc.vel[0];
             
-            var newZ = loc.pos[2] + loc.vel[2] * boundReachTime1;
-            if (newZ < this.posBounds[4] + this.cornerDetectionThreshold)
-                var boundType1 = Lemmings.BoundType.MAXX_MINZ;
-            else if (newZ > this.posBounds[5] - this.cornerDetectionThreshold)
-                var boundType1 = Lemmings.BoundType.MAXX_MAXZ;
-            else
+            //var newZ = loc.pos[2] + loc.vel[2] * boundReachTime1;
+            //if (newZ < this.posBounds[4] + this.cornerDetectionThreshold)
+            //    var boundType1 = Lemmings.BoundType.MAXX_MINZ;
+            //else if (newZ > this.posBounds[5] - this.cornerDetectionThreshold)
+            //    var boundType1 = Lemmings.BoundType.MAXX_MAXZ;
+            //else
                 var boundType1 = Lemmings.BoundType.MAXX;
             
         } else if (loc.vel[0] < 0) {
             var boundReachTime1 = (loc.pos[0] - this.posBounds[0]) / (-loc.vel[0]);
             
-            var newZ = loc.pos[2] + loc.vel[2] * boundReachTime1;
-            if (newZ < this.posBounds[4] + this.cornerDetectionThreshold)
-                var boundType1 = Lemmings.BoundType.MINX_MINZ;
-            else if (newZ > this.posBounds[5] - this.cornerDetectionThreshold)
-                var boundType1 = Lemmings.BoundType.MINX_MAXZ;
-            else
+            //var newZ = loc.pos[2] + loc.vel[2] * boundReachTime1;
+            //if (newZ < this.posBounds[4] + this.cornerDetectionThreshold)
+            //    var boundType1 = Lemmings.BoundType.MINX_MINZ;
+            //else if (newZ > this.posBounds[5] - this.cornerDetectionThreshold)
+            //    var boundType1 = Lemmings.BoundType.MINX_MAXZ;
+            //else
                 var boundType1 = Lemmings.BoundType.MINX;
         }
         
         if (loc.vel[2] > 0) {
             var boundReachTime2 = (this.posBounds[5] - loc.pos[2]) / loc.vel[2];
             
-            var newX = loc.pos[0] + loc.vel[0] * boundReachTime2;
-            if (newX < this.posBounds[0] + this.cornerDetectionThreshold)
-                var boundType2 = Lemmings.BoundType.MINX_MAXZ;
-            else if (newX > this.posBounds[1] - this.cornerDetectionThreshold)
-                var boundType2 = Lemmings.BoundType.MAXX_MAXZ;
-            else
+            //var newX = loc.pos[0] + loc.vel[0] * boundReachTime2;
+            //if (newX < this.posBounds[0] + this.cornerDetectionThreshold)
+            //    var boundType2 = Lemmings.BoundType.MINX_MAXZ;
+            //else if (newX > this.posBounds[1] - this.cornerDetectionThreshold)
+            //    var boundType2 = Lemmings.BoundType.MAXX_MAXZ;
+            //else
                 var boundType2 = Lemmings.BoundType.MAXZ;
         } else if (loc.vel[2] < 0) {
             var boundReachTime2 = (loc.pos[2] - this.posBounds[4]) / (-loc.vel[2]);
             
-            var newX = loc.pos[0] + loc.vel[0] * boundReachTime2;
-            if (newX < this.posBounds[0] + this.cornerDetectionThreshold)
-                var boundType2 = Lemmings.BoundType.MINX_MINZ;
-            else if (newX > this.posBounds[1] - this.cornerDetectionThreshold)
-                var boundType2 = Lemmings.BoundType.MAXX_MINZ;
-            else
+            //var newX = loc.pos[0] + loc.vel[0] * boundReachTime2;
+            //if (newX < this.posBounds[0] + this.cornerDetectionThreshold)
+            //    var boundType2 = Lemmings.BoundType.MINX_MINZ;
+            //else if (newX > this.posBounds[1] - this.cornerDetectionThreshold)
+            //    var boundType2 = Lemmings.BoundType.MAXX_MINZ;
+            //else
                 var boundType2 = Lemmings.BoundType.MINZ;
         }
         
@@ -109,10 +112,6 @@ Kata.require([
             window.setTimeout(Kata.bind(this.changeOrientation, this, boundType1), Math.max(0, boundReachTime1 * 1000));
         else
             window.setTimeout(Kata.bind(this.changeOrientation, this, boundType2), Math.max(0, boundReachTime2 * 1000));
-            
-        console.log(this.name + ": " + 
-                    "position=[" + loc.pos[0] + ", " + loc.pos[1] + ", " + loc.pos[2] + "], " + 
-                    "velocity=[" + loc.vel[0] + ", " + loc.vel[1] + ", " + loc.vel[2] + "].");
     }
     
 }, kata_base_offset + "scripts/LemmingScript.js");
