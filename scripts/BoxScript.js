@@ -15,6 +15,9 @@ Kata.require([
         
         // add trackable radar for this lemming
         this.radar = new Lemmings.Behavior.Radar(this, false);
+        
+        // save location
+        this.loc = args.loc;
     };
     Kata.extend(Lemmings.BoxScript, SUPER);
     
@@ -29,6 +32,9 @@ Kata.require([
         
         // save box's world presence
         this.presence = presence;
+        
+        // send a location update to the space server
+        this.presence.setLocation(this.loc);
     }
     
     // return object's type

@@ -8,9 +8,9 @@ Kata.require([
         var randomLocation = Kata.LocationIdentityNow();
         
         // randomize position
-        randomLocation.pos.x = Math.random() * (posBounds[1] - posBounds[0]) + posBounds[0];
-        randomLocation.pos.y = Math.random() * (posBounds[3] - posBounds[2]) + posBounds[2];
-        randomLocation.pos.z = Math.random() * (posBounds[5] - posBounds[4]) + posBounds[4];
+        randomLocation.pos[0] = Math.random() * (posBounds[1] - posBounds[0]) + posBounds[0];
+        randomLocation.pos[1] = Math.random() * (posBounds[3] - posBounds[2]) + posBounds[2];
+        randomLocation.pos[2] = Math.random() * (posBounds[5] - posBounds[4]) + posBounds[4];
         
         return randomLocation;
     }

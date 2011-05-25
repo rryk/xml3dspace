@@ -18,8 +18,9 @@
             var lemmingMesh = "static/meshes/lemming.xml3d";
             var boxMesh = "static/meshes/box.xml3d";
             var worldBounds = [-10, 10, 0, 0, -10, 10];
-            var lemmingSpeed = 3;
+            var lemmingSpeed = 1;
             var lemmingCornerDetectionThreshold = 2;
+            var lemmingAvoidingDistance = 1;
             var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
             
             // configure Web Workers
@@ -73,11 +74,13 @@
         <!--<div class="in-development">CONTROL PANEL IS <br/> UNDER DEVELOPMENT</div>-->
         <div id="buttons">
             <label for="server-address">Server address:</label>
-            <input id="server-address" value="sirikata://localhost:7777/" />
+            <input id="server-address" value="sirikata://yellow.cg.uni-saarland.de:7777/" />
             <button id="connectButton" onclick="connect($('#server-address').val(), staticWorldMesh)">Connect</button>
             <button id="disconnectButton" disabled="true">Disconnect</button>
-            <button id="createLemmingButton" disabled="true">Create lemming</button>
-            <button id="createBoxButton" disabled="true">Create box</button>
+            <label for="server-address">Create </label>
+            <input id="numberToCreate" value="1" />
+            <button id="createLemmingButton" disabled="true">lemming(s)</button>
+            <button id="createBoxButton" disabled="true">box(es)</button>
         </div>
         <div id="radar" />
     </body>

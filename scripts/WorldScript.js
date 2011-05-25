@@ -89,31 +89,32 @@ Kata.require([
     
     // create a lemming
     Lemmings.WorldScript.prototype.createLemming = function() {
-        this.createObject(
-            kata_base_offset + "scripts/LemmingScript.js", 
-            "Lemmings.LemmingScript",
-            {
-                name: this.randomLemmingName(), // lemming's name
-                space: this.space, // space to connect to
-                mesh: this.lemmingMesh, // lemming's mesh
-                loc: Lemmings.randomizePositionInXZ(this.worldBounds), // initial location
-                posBounds: this.worldBounds, // position bounds
-                speed: this.lemmingSpeed, // lemming's speed
-                cornerDetectionThreshold: this.lemmingCornerDetectionThreshold, // corner detection threshold
-            });
+        for (var i = 0; i < $("#numberToCreate").val(); i++)            
+            this.createObject(
+                kata_base_offset + "scripts/LemmingScript.js", 
+                "Lemmings.LemmingScript",
+                {
+                    name: this.randomLemmingName(), // lemming's name
+                    space: this.space, // space to connect to
+                    visual: this.lemmingMesh, // lemming's mesh
+                    loc: Lemmings.randomizePositionInXZ(this.worldBounds), // initial location
+                    posBounds: this.worldBounds, // position bounds
+                    speed: this.lemmingSpeed, // lemming's speed
+                    cornerDetectionThreshold: this.lemmingCornerDetectionThreshold, // corner detection threshold
+                });
     }
     
     // create a box
     Lemmings.WorldScript.prototype.createBox = function() {
-        this.createObject(
-            kata_base_offset + "scripts/BoxScript.js", 
-            "Lemmings.BoxScript",
-            {
-                space: this.space, // space to connect to
-                mesh: this.boxMesh, // box's mesh
-                loc: Lemmings.randomizePositionInXZ(this.worldBounds), // initial location
-                posBounds: this.worldBounds, // position bounds
-            });
+        for (var i = 0; i < $("#numberToCreate").val(); i++)            
+            this.createObject(
+                kata_base_offset + "scripts/BoxScript.js", 
+                "Lemmings.BoxScript",
+                {
+                    space: this.space, // space to connect to
+                    visual: this.boxMesh, // box's mesh
+                    loc: Lemmings.randomizePositionInXZ(this.worldBounds), // initial location
+                });
     }
     
 }, kata_base_offset + "scripts/WorldScript.js");

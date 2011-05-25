@@ -19,9 +19,19 @@ body {
     margin: 20px;
 }
 
-#buttons input {
+#disconnectButton {
+    display: none;
+}
+
+#server-address {
     border: 1px solid black;
     width: 300px;
+}
+
+#numberToCreate {
+    border: 1px solid black;
+    width: 30px;
+    text-align: center;
 }
 
 #radar svg {
@@ -33,6 +43,7 @@ body {
 
 #radar svg .lemming {
     fill: red;
+    stroke: none;
 }
 
 #radar svg .box {
