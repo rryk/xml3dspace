@@ -19,8 +19,6 @@
             var boxMesh = "static/meshes/box.xml3d";
             var worldBounds = [-10, 10, 0, 0, -10, 10];
             var lemmingSpeed = 1;
-            var lemmingCornerDetectionThreshold = 2;
-            var lemmingAvoidingDistance = 1;
             var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
             
             // configure Web Workers
@@ -47,22 +45,24 @@
                 $("#connectButton").attr("disabled", "disabled");
                 
                 Kata.require([
-                    'katajs/oh/MainThread.js', // allows to create MainThread object
-                    'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // allows to use sirikata://.../ protocol
+                    'katajs/oh/MainThread.js', // to create MainThread object
+                    'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // to use sirikata://.../ protocol
+                    kata_base_offset + "scripts/ui/DisplayUI.js", // to create radar user interface
                 ], function() {
                     window.kata = new Kata.MainThread(
-                        kata_base_offset + "scripts/WorldScript.js", 
+                        kata_base_offset + "scripts/WorldScript.js",
                         "Lemmings.WorldScript",
                         {
                             space: address, 
-                            visual: mesh, 
-                            worldBounds: worldBounds, 
+                            visual: mesh,
+                            worldBounds: worldBounds,
                             lemmingMesh: lemmingMesh,
                             lemmingSpeed: lemmingSpeed,
-                            lemmingCornerDetectionThreshold: lemmingCornerDetectionThreshold,
                             boxMesh: boxMesh
                         }
-                    )
+                    );
+                    
+                    var display = new DisplayUI(kata.getChannel(), $("#radar"), worldBounds, 30);
                 })
             }
         ]]></script>

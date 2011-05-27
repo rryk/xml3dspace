@@ -34,19 +34,17 @@ body {
     text-align: center;
 }
 
-#radar svg {
+.radar {
     margin: 20px;
-    width: 600px;
-    height: 600px;
     border: 1px black solid;
 }
 
-#radar svg .lemming {
+.radar .lemming {
     fill: red;
     stroke: none;
 }
 
-#radar svg .box {
+.radar .box {
     fill: black;
     stroke: none;
 }

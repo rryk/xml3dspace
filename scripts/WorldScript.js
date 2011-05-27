@@ -3,7 +3,8 @@ if (typeof(Lemmings) === "undefined") Lemmings = {};
 Kata.require([
     'katajs/oh/Script.js',
     kata_base_offset + 'scripts/Tools.js',
-    kata_base_offset + 'scripts/behaviors/radar/Radar.js'
+    kata_base_offset + 'scripts/behaviors/radar/Radar.js',
+    kata_base_offset + 'scripts/behaviors/radar/RadarDisplay.js'
 ], function() {
     
     var SUPER = Kata.Script.prototype;
@@ -27,8 +28,13 @@ Kata.require([
         // connect to the space server
         this.connect(args, null, Kata.bind(this.connected, this));
         
-        // add tracking radar behavior to the world object
-        this.radar = new Lemmings.Behavior.Radar(this, true);
+        // add display behavior to the world object
+        this.display = new Lemmings.Behavior.RadarDisplay(this);
+        
+        // add radar behavior to the world object
+        this.radar = new Lemmings.Behavior.Radar(this, false, 
+            this.display.getStartTrackingCallback(),
+            this.display.getStopTrackingCallback());
     };
     Kata.extend(Lemmings.WorldScript, SUPER);    
     

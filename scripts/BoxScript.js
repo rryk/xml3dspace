@@ -14,7 +14,7 @@ Kata.require([
         this.connect(args, null, Kata.bind(this.connected, this));
         
         // add trackable radar for this lemming
-        this.radar = new Lemmings.Behavior.Radar(this, false);
+        this.radar = new Lemmings.Behavior.Radar(this, true);
         
         // save location
         this.loc = args.loc;
@@ -40,6 +40,11 @@ Kata.require([
     // return object's type
     Lemmings.BoxScript.prototype.getType = function() {
         return "box";
+    }
+    
+    // return object's type
+    Lemmings.BoxScript.prototype.getSize = function() {
+        return 1;
     }
     
 }, kata_base_offset + "scripts/BoxScript.js");

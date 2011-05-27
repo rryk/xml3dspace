@@ -15,32 +15,13 @@ Kata.require([
         return randomLocation;
     }
     
-    Lemmings.randomizeOrientationWithBoundInXZAndUpdateVelocity = function(oldLocation, speed, bound) {
+    Lemmings.randomizeOrientationWithBoundInXZAndUpdateVelocity = function(oldLocation, speed, minAngle, maxAngle) {
         var newLocation = {};
         Kata.LocationCopy(newLocation, oldLocation);
         
         // randomize orientation
         var axis = [0, 1, 0];
-        if (bound == Lemmings.BoundType.MINX)
-            var angle = Math.random() * Math.PI;
-        else if (bound == Lemmings.BoundType.MAXX)
-            var angle = Math.random() * Math.PI + Math.PI;
-        else if (bound == Lemmings.BoundType.MINZ)
-            var angle = Math.random() * Math.PI + Math.PI / 2;
-        else if (bound == Lemmings.BoundType.MAXZ)
-            var angle = Math.random() * Math.PI - Math.PI / 2;
-        else if (bound == Lemmings.BoundType.MINX_MINZ)
-            var angle = Math.random() * Math.PI / 2 + Math.PI / 2;
-        else if (bound == Lemmings.BoundType.MINX_MAXZ)
-            var angle = Math.random() * Math.PI / 2;
-        else if (bound == Lemmings.BoundType.MAXX_MINZ)
-            var angle = Math.random() * Math.PI / 2 + Math.PI;
-        else if (bound == Lemmings.BoundType.MAXX_MAXZ)
-            var angle = Math.random() * Math.PI / 2 - Math.PI / 2;
-        else if (bound == Lemmings.BoundType.NONE)
-            var angle = Math.random() * 2 * Math.PI;
-        else
-            Kata.error("Unrecognized bound type.");
+        var angle = (maxAngle - minAngle) * Math.random() + minAngle;
             
         // convert axis-angle to quaternion
         // TODO: we assume that avatar is originally facing -Z direction, which may
@@ -54,16 +35,18 @@ Kata.require([
         return newLocation;
     }
     
-    Lemmings.BoundType = {
-        MINX: 1,
-        MAXX: 2,
-        MINZ: 3,
-        MAXZ: 4,
-        MINX_MINZ: 5,
-        MINX_MAXZ: 6,
-        MAXX_MINZ: 7,
-        MAXX_MAXZ: 8,
-        NONE: 9
+    Lemmings.serializeMessage = function(msg) {
+        var serialized = new PROTO.ByteArrayStream();
+        msg.SerializeToStream(serialized);
+        return serialized.getArray();
     };
+    
+    Lemmings.isNumber = function(val) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+    
+    Lemmings.equalPositions = function(position1, position2) {
+        return position1[0] == position2[0] && position1[1] == position2[1] && position1[2] == position2[2];
+    }
 
 }, kata_base_offset + "scripts/LemmingTools.js");
