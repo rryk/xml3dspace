@@ -23,6 +23,7 @@ Kata.require([
         this.name = args.name;
         this.speed = args.speed;
         this.worldBounds = args.worldBounds;
+        this.loc = args.loc;
         
         // initialize object list
         this.objects = {};
@@ -40,6 +41,7 @@ Kata.require([
         
         // save lemmings's world presence
         this.presence = presence;
+        this.presence.setLocation(this.loc);
         
         // start movement (any direction)
         this.planMovement();
