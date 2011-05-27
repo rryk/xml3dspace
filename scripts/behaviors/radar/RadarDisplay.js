@@ -59,7 +59,8 @@ Kata.require([
             action: "create",
             id: id,
             type: obj.type,
-            size: obj.size
+            size: obj.size,
+            name: obj.name
         });
         this.parent._sendHostedObjectMessage(msg);
         

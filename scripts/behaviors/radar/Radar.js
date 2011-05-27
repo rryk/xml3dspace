@@ -27,11 +27,11 @@ Kata.require([
         this.startTrackingCallback = startTrackingCallback;
         this.stopTrackingCallback = stopTrackingCallback;
         
-        // init tracked objects array
+        // init arrays
         this.trackedObjs = {};
-        
-        // init ODP ports array
         this.odpPorts = {};
+        this.delayedRP = {};
+        this.registeredRP = {};
     }
     
     // Port used for communication with radar
@@ -64,20 +64,37 @@ Kata.require([
      * @param added Flag that denotes whether remote object was created (true) or removed (false).
      */
     Lemmings.Behavior.Radar.prototype.remotePresence = function(presence, remote, added) {
+        //console.log("Radar::remotePresence(presence=" + presence.id() + ", remote=" + remote.id() + ", added=" + (added?"true":"false") + ")");
+        
         if (added) {
             if (this.isTrackable)
             {
                 // create an intro message
                 var trackMsg = new Radar.Protocol.Track();
+                if (this.parent.getName)
+                    trackMsg.name = this.parent.getName();
                 trackMsg.type = this.parent.getType();
                 trackMsg.size = this.parent.getSize();
                 var containerMsg = new Radar.Protocol.Container();
                 containerMsg.track = trackMsg;
-                    
+                
                 // send the intro message
                 this.getODPPort(presence).send(remote.endpoint(this.ProtocolPort), Lemmings.serializeMessage(containerMsg));
             }
+            
+            // register remote presence
+            var rpKey = remote.presenceID().toString();
+            this.registeredRP[rpKey] = true;
+            
+            // start tracking delayed objects
+            var delayedRP = this.delayedRP[rpKey];
+            if (delayedRP && delayedRP.push)
+               for (var i = 0; i < delayedRP.length; i++)
+                   delayedRP[i]();
         } else {
+            // unregister remote presence
+            delete this.registeredRP[remote.presenceID()];
+        
             if (this.trackedObjs[remote.id()])
                 this.stopTracking(presence, remote.presenceID());
         }
@@ -88,6 +105,8 @@ Kata.require([
      * each space that we connect to.
      */
     Lemmings.Behavior.Radar.prototype.newPresence = function(presence) {
+        //console.log("Radar::newPresence(presence=" + presence.id() + ")");
+        
         // create ODP port and start listening to messages
         this.getODPPort(presence);
     }
@@ -129,18 +148,31 @@ Kata.require([
      * @param trackMsg Track message that was received.
      */
     Lemmings.Behavior.Radar.prototype.startTracking = function(presenceID, remotePresenceID, trackMsg) {
+        //console.log("Radar::startTracking(presenceID=" + presenceID + ", remotePresenceID=" + remotePresenceID.object() +", trackMsg)");
+        
         // add remote presence for tracking
         var remoteID = remotePresenceID.object();
         if (!this.trackedObjs[presenceID]) 
             this.trackedObjs[presenceID] = {};
         this.trackedObjs[presenceID][remoteID] = {
+            name: trackMsg.name,
             type: trackMsg.type,
             size: trackMsg.size
         };
         
         // notify parent script
         if (this.startTrackingCallback)
-            this.startTrackingCallback(presenceID, remotePresenceID, this.trackedObjs[presenceID][remoteID]);
+        {
+            var rpKey = remotePresenceID.toString();
+            if (this.registeredRP[rpKey]) {
+                this.startTrackingCallback(presenceID, remotePresenceID, this.trackedObjs[presenceID][remoteID]);
+            } else {
+                this.delayedRP[rpKey] = this.delayedRP[rpKey] ? this.delayedRP[remotePresenceID] : [];
+                this.delayedRP[rpKey].push(
+                    Kata.bind(this.startTrackingCallback, this, presenceID, remotePresenceID, this.trackedObjs[presenceID][remoteID])
+                );
+            }
+        }
     }
     
     ////** Starts tracking process. This is only called for tracking radar. */

@@ -104,15 +104,14 @@ Kata.require([
                     space: this.space, // space to connect to
                     visual: this.lemmingMesh, // lemming's mesh
                     loc: Lemmings.randomizePositionInXZ(this.worldBounds), // initial location
-                    posBounds: this.worldBounds, // position bounds
+                    worldBounds: this.worldBounds, // position bounds
                     speed: this.lemmingSpeed, // lemming's speed
-                    cornerDetectionThreshold: this.lemmingCornerDetectionThreshold, // corner detection threshold
                 });
     }
     
     // create a box
     Lemmings.WorldScript.prototype.createBox = function() {
-        for (var i = 0; i < $("#numberToCreate").val(); i++)            
+        for (var i = 0; i < $("#numberToCreate").val(); i++)
             this.createObject(
                 kata_base_offset + "scripts/BoxScript.js", 
                 "Lemmings.BoxScript",

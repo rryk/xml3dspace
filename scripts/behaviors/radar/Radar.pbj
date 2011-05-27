@@ -4,8 +4,9 @@ package Radar.Protocol;
 
 // Object's response to intro after which radar starts to track the object
 message Track {
-    required string type = 1; // object's type, e.g. lemming, box etc.
-    required float size = 2; // object's size, used for avoiding
+    optional string name = 1; // optional object's name
+    required string type = 2; // object's type, e.g. lemming, box etc.
+    required float size = 3; // object's size, used for avoiding
 }
 
 // Container message

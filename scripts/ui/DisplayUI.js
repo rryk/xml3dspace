@@ -39,7 +39,7 @@ Kata.require([
      * @param type Type of object. Defines appearance.
      * @param size Minimum circle radius required to inscribe object into it.
      */
-    DisplayUI.prototype.create = function(id, type, size) {
+    DisplayUI.prototype.create = function(id, type, size, name) {
         if (this.objects[id]) {
             Kata.warn("Tried to create new object with same ID.");
             return;
@@ -51,6 +51,7 @@ Kata.require([
            var radius = size * this.scale; // map size to radius
            svgObj.setAttribute("r", size * this.scale);
            svgObj.setAttribute("class", "lemming");
+           svgObj.setAttribute("title", name);
            svgObj.style.display = "none";
            svgObj.setPosition = function(x, y) {
                svgObj.setAttribute("cx", x);
@@ -87,7 +88,7 @@ Kata.require([
         
         // map position to the canvas
         var x = this.containerWidth * (pos[0] - this.worldBounds[0]) / (this.worldBounds[1] - this.worldBounds[0]);
-        var y = this.containerHeight * (pos[2] - this.worldBounds[4]) / (this.worldBounds[5] - this.worldBounds[4]);
+        var y = this.containerHeight * ((-pos[2]) - this.worldBounds[4]) / (this.worldBounds[5] - this.worldBounds[4]);
         
         // move the object
         this.objects[id].setPosition(x, y);
@@ -114,7 +115,7 @@ Kata.require([
         if (msg.msg == "display")
         {
             if (msg.event.action == "create")
-                this.create(msg.event.id, msg.event.type, msg.event.size);
+                this.create(msg.event.id, msg.event.type, msg.event.size, msg.event.name);
             else if (msg.event.action == "move")
                 this.move(msg.event.id, msg.event.pos);
             else if (msg.event.action = "delete")

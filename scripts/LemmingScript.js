@@ -21,9 +21,11 @@ Kata.require([
         
         // save lemming's configuration
         this.name = args.name;
-        this.posBounds = args.posBounds;
         this.speed = args.speed;
-        this.cornerDetectionThreshold = args.cornerDetectionThreshold;
+        this.worldBounds = args.worldBounds;
+        
+        // initialize object list
+        this.objects = {};
     };
     Kata.extend(Lemmings.LemmingScript, SUPER);
     
@@ -49,11 +51,11 @@ Kata.require([
         {
             var remote = this.getRemotePresence(remotePresenceID);
             var newObj = {
-                pos: remote.position(),
+                pos: remote.predictedPosition(new Date()),
                 size: obj.size
             };
             this.objects[remotePresenceID.toString()] = newObj;
-            this.planMovement(0, 0, newObj);
+            setTimeout(Kata.bind(this.planMovement, this, newObj), 100);
         }
     }
     
@@ -61,7 +63,7 @@ Kata.require([
     Lemmings.LemmingScript.prototype.removedObjectCallback = function(presenceID, remotePresenceID) {
         if (this.object[remotePresenceID.toString()]) {
             var oldObj = this.object[remotePresenceID.toString()];
-            this.planMovement(0, 0, 0, oldObj);
+            this.planMovement(0, oldObj);
         }
     }
     
@@ -85,20 +87,31 @@ Kata.require([
         // clear previous timeout if any
         if (this.planTimeout)
             window.clearTimeout(this.planTimeout);
+            
+        // get current location
+        var now = new Date();
+        var loc = this.presence.predictedLocationAtTime(now);
+        
+        if (loc.pos[0] < this.worldBounds[0]-1 || loc.pos[0] > this.worldBounds[1]+1 || loc.pos[2] < this.worldBounds[4]-1 || loc.pos[2] > this.worldBounds[5]+1) {
+            //Kata.warn("object is outside the world boundaries, moving to origin");
+            loc.pos = [0, 0, 0];
+            this.presence.setLocation(loc);
+        }
         
         if (!newObj && !oldObj) {
             // generate new orientation as we have reached the object or world boundary
-            var loc = this.presence.predictedLocationAtTime(new Date());
-            
-            if (this.bounds && this.closestBoundaryIndex) {
-                var minAng = this.bounds[this.closestBoundaryIndex].minAng;
-                var maxAng = this.bounds[this.closestBoundaryIndex].maxAng;
+            if (this.bounds && this.closestBoundary) {
+                var minAng = this.bounds[this.closestBoundary].minAng;
+                var maxAng = this.bounds[this.closestBoundary].maxAng;
             } else {
                 minAng = 0;
                 maxAng = 2 * Math.PI;
             }
             
+            // randomize new orientation
             loc = Lemmings.randomizeOrientationWithBoundInXZAndUpdateVelocity(loc, this.speed, minAng, maxAng);
+            
+            // send a location update to the space server
             this.presence.setLocation(loc);
         } else if (newObj) {
             // TODO: update closest boundary by comparing to new object only
@@ -106,53 +119,61 @@ Kata.require([
             // TODO: find closest boundary from the rest of objects
         }
         
-        // send a location update to the space server
-        
-        
-        this.bounds = [];
+        // start recomputing
+        this.bounds = {};
         
         // compute bounds for the world boundary
         if (loc.vel[0] > 0) {
-            this.bounds.push({
-                time: (this.posBounds[1] - loc.pos[0]) / loc.vel[0],
+            this.bounds["right-world-boundary"] = {
+                time: (this.worldBounds[1] - loc.pos[0]) / loc.vel[0],
                 minAng: Math.PI,
                 maxAng: Math.PI * 2
-            });
+            };
         } else if (loc.vel[0] < 0) {
-            this.bounds.push({
-                time: (loc.pos[0] - this.posBounds[0]) / (-loc.vel[0]),
+            this.bounds["left-world-boundary"] = {
+                time: (loc.pos[0] - this.worldBounds[0]) / (-loc.vel[0]),
                 minAng: 0,
                 maxAng: Math.PI
-            });
+            };
         }
         
         if (loc.vel[2] > 0) {
-            this.bounds.push({
-                time: (this.posBounds[5] - loc.pos[2]) / loc.vel[2],
+            this.bounds["top-world-boundary"] = {
+                time: (this.worldBounds[5] - loc.pos[2]) / loc.vel[2],
                 minAng: -Math.PI / 2,
                 maxAng: Math.PI / 2,
-            });
+            };
         } else if (loc.vel[2] < 0) {
-            this.bounds.push({
-                time: (loc.pos[2] - this.posBounds[4]) / (-loc.vel[2]),
+            this.bounds["bottom-world-boundary"] = {
+                time: (loc.pos[2] - this.worldBounds[4]) / (-loc.vel[2]),
                 minAng: Math.PI / 2,
                 maxAng: 3 * Math.PI / 2,
-            });
+            };
         }
         
-        for (var obj in this.objects) {
-            // TODO: compute boundary for obj
+        for (var objID in this.objects) {
+            var obj = this.objects[objID];
+            var dist = Lemmings.distToObject(loc.pos, loc.vel, obj.pos, obj.size);
+            if (dist > 0) {
+                var angles = Lemmings.reflectionAngles(loc.pos, loc.vel, obj.pos, dist);
+                this.bounds[objID] = {
+                    time: dist / this.speed,
+                    minAng: angles.min,
+                    maxAng: angles.max
+                };
+            }
         }
         
-        // find closes boundary
-        this.closestBoundaryIndex = 0;
-        for (var index = 1; index < this.bounds.length; index++)
-            if (this.bounds[index].time < this.bounds[this.closestBoundaryIndex].time)
-                this.closestBoundaryIndex = index;
+        // find closest boundary
+        this.closestBoundary = "";
+        for (var b in this.bounds)
+            if (this.closestBoundary === "" || this.bounds[b].time < this.bounds[this.closestBoundary].time)
+                this.closestBoundary = b;
         
         // schedule next planning
-        // Note: Math.max here is needed because we may get negative bound reach time if we will happen to be in the corner
-        var time = this.bounds[this.closestBoundaryIndex].time;
+        // Note: Math.max here is needed because reach time may get negative when object will be slightly behind the
+        //       world boundary. FIXME: Shouldn't we ignore such boundary?
+        var time = this.bounds[this.closestBoundary].time;
         this.planTimeout = window.setTimeout(Kata.bind(this.planMovement, this), Math.max(0, time * 1000));
     }
     
