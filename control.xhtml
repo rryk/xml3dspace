@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>LemmiSpace</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        
+        <!-- jQuery simplified Web/JavaScript development -->
+        <script type="text/javascript" src="externals/jquery/jquery-1.6.1.js"></script>
+
+        <!-- KataJS simplifies development of the Sirikata ObjectHost in the browser -->
+        <script type="text/javascript" src="externals/katajs/katajs/core/Core.js"></script>
+        
+        <!-- configuration -->
+        <script type="text/javascript"><![CDATA[
+            var staticWorldMesh = "static/meshes/staticWorld.xml3d";
+            var lemmingMesh = "static/meshes/lemming.xml3d";
+            var boxMesh = "static/meshes/box.xml3d";
+            var worldBounds = [-10, 10, 0, 0, -10, 10];
+            var lemmingSpeed = 1;
+            var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
+            
+            // configure Web Workers
+            Kata.WEB_WORKERS_ENABLED = false;
+            //Kata.bootstrapWorker = window.location.href + "/boostrapWorker.js";
+        ]]></script>
+        
+        <!-- main script -->
+        <script type="text/javascript"><![CDATA[
+            // To connect to the server we do:
+            //   1. Create MainThread, which
+            //   2. Creates ObjectHostWorker, which
+            //   3. Starts ObjectHost, which
+            //   4. Creates first HostedObject (static world), which
+            //   5. Loads it's script (WorldScript.js), which
+            //   6. Controls the application
+            // To send message to this script one should use 
+            // windows.kata.getChannel(), which is connected to the
+            // ObjectHost, which sends all messages to the first object's 
+            // script (WorldScript.js). In this way, the core of the 
+            // application is the first object's script.
+            function connect(address, mesh) {
+                // disable connect button
+                $("#connectButton").attr("disabled", "disabled");
+                
+                Kata.require([
+                    'katajs/oh/MainThread.js', // to create MainThread object
+                    'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // to use sirikata://.../ protocol
+                    kata_base_offset + "scripts/ui/DisplayUI.js", // to create radar user interface
+                ], function() {
+                    window.kata = new Kata.MainThread(
+                        kata_base_offset + "scripts/WorldScript.js",
+                        "Lemmings.WorldScript",
+                        {
+                            space: address, 
+                            visual: mesh,
+                            worldBounds: worldBounds,
+                            lemmingMesh: lemmingMesh,
+                            lemmingSpeed: lemmingSpeed,
+                            boxMesh: boxMesh
+                        }
+                    );
+                    
+                    var display = new DisplayUI(kata.getChannel(), $("#radar"), worldBounds, 30);
+                })
+            }
+        ]]></script>
+        
+        <!-- Load style for the control panel interface -->
+        <link type="text/css" href="style/style-host.css" rel="stylesheet" media="all" />
+    </head>
+    <body>
+        <!--<div class="in-development">CONTROL PANEL IS <br/> UNDER DEVELOPMENT</div>-->
+        <div id="buttons">
+            <label for="server-address">Server address:</label>
+            <input id="server-address" value="sirikata://yellow.cg.uni-saarland.de:7777/" />
+            <button id="connectButton" onclick="connect($('#server-address').val(), staticWorldMesh)">Connect</button>
+            <button id="disconnectButton" disabled="true">Disconnect</button>
+            <label for="server-address">Create </label>
+            <input id="numberToCreate" value="1" />
+            <button id="createLemmingButton" disabled="true">lemming(s)</button>
+            <button id="createBoxButton" disabled="true">box(es)</button>
+        </div>
+        <div id="radar" />
+    </body>
+</html>

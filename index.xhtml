@@ -14,12 +14,9 @@
         
         <!-- configuration -->
         <script type="text/javascript"><![CDATA[
-            var staticWorldMesh = "static/meshes/staticWorld.xml3d";
-            var lemmingMesh = "static/meshes/lemming.xml3d";
-            var boxMesh = "static/meshes/box.xml3d";
-            var worldBounds = [-10, 10, 0, 0, -10, 10];
-            var lemmingSpeed = 1;
+            var emptyMesh = "static/meshes/emptyMesh.xml3d"
             var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
+            var spaceServerAddress = "sirikata://yellow.cg.uni-saarland.de:7777/"; // space server address
             
             // configure Web Workers
             Kata.WEB_WORKERS_ENABLED = false;
@@ -28,60 +25,34 @@
         
         <!-- main script -->
         <script type="text/javascript"><![CDATA[
-            // To connect to the server we do:
-            //   1. Create MainThread, which
-            //   2. Creates ObjectHostWorker, which
-            //   3. Starts ObjectHost, which
-            //   4. Creates first HostedObject (static world), which
-            //   5. Loads it's script (WorldScript.js), which
-            //   6. Controls the application
-            // To send message to this script one should use 
-            // windows.kata.getChannel(), which is connected to the
-            // ObjectHost, which sends all messages to the first object's 
-            // script (WorldScript.js). In this way, the core of the 
-            // application is the first object's script.
-            function connect(address, mesh) {
-                // disable connect button
-                $("#connectButton").attr("disabled", "disabled");
-                
+            $(window).load(function() {
                 Kata.require([
                     'katajs/oh/MainThread.js', // to create MainThread object
+                    'katajs/gfx/xml3dgfx.js', // XML3D Graphics Simulation
                     'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // to use sirikata://.../ protocol
-                    kata_base_offset + "scripts/ui/DisplayUI.js", // to create radar user interface
                 ], function() {
-                    window.kata = new Kata.MainThread(
-                        kata_base_offset + "scripts/WorldScript.js",
-                        "Lemmings.WorldScript",
-                        {
-                            space: address, 
-                            visual: mesh,
-                            worldBounds: worldBounds,
-                            lemmingMesh: lemmingMesh,
-                            lemmingSpeed: lemmingSpeed,
-                            boxMesh: boxMesh
-                        }
-                    );
-                    
-                    var display = new DisplayUI(kata.getChannel(), $("#radar"), worldBounds, 30);
-                })
-            }
+                    Kata.GraphicsSimulation.initializeDriver("XML3D", emptyMesh, function() {
+                        kata = new Kata.MainThread(
+                            kata_base_offset + "scripts/ViewerScript.js",
+                            "Lemmings.ViewerScript",
+                            {
+                                space: spaceServerAddress,
+                                visual: emptyMesh
+                            }
+                        );
+                        graphics = new Kata.GraphicsSimulation("XML3D", kata.getChannel(), document.getElementById("view"));
+                    });
+                });
+            });
         ]]></script>
         
-        <!-- Load style for the control panel interface -->
-        <link type="text/css" href="style/style-host.css" rel="stylesheet" media="all" />
+        <!-- Load style for the viewer interface -->
+        <link type="text/css" href="style/style-common.css" rel="stylesheet" media="all" />
+        <link type="text/css" href="style/style-viewer.css" rel="stylesheet" media="all" />
     </head>
     <body>
-        <!--<div class="in-development">CONTROL PANEL IS <br/> UNDER DEVELOPMENT</div>-->
-        <div id="buttons">
-            <label for="server-address">Server address:</label>
-            <input id="server-address" value="sirikata://yellow.cg.uni-saarland.de:7777/" />
-            <button id="connectButton" onclick="connect($('#server-address').val(), staticWorldMesh)">Connect</button>
-            <button id="disconnectButton" disabled="true">Disconnect</button>
-            <label for="server-address">Create </label>
-            <input id="numberToCreate" value="1" />
-            <button id="createLemmingButton" disabled="true">lemming(s)</button>
-            <button id="createBoxButton" disabled="true">box(es)</button>
-        </div>
-        <div id="radar" />
+        <div id="view" />
+        
+        <div class="in-development">VIEWER INTERFACE IS <br/> UNDER DEVELOPMENT</div>
     </body>
 </html>
