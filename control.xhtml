@@ -54,7 +54,7 @@
                         "Lemmings.WorldScript",
                         {
                             space: address, 
-                            visual: mesh,
+                            vis: {mesh: mesh},
                             worldBounds: worldBounds,
                             lemmingMesh: lemmingMesh,
                             lemmingSpeed: lemmingSpeed,
@@ -74,7 +74,7 @@
         <!--<div class="in-development">CONTROL PANEL IS <br/> UNDER DEVELOPMENT</div>-->
         <div id="buttons">
             <label for="server-address">Server address:</label>
-            <input id="server-address" value="sirikata://yellow.cg.uni-saarland.de:7777/" />
+            <input id="server-address" value="sirikata://localhost:7777/" />
             <button id="connectButton" onclick="connect($('#server-address').val(), staticWorldMesh)">Connect</button>
             <button id="disconnectButton" disabled="true">Disconnect</button>
             <label for="server-address">Create </label>

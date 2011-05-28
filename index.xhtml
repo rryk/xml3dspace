@@ -16,7 +16,7 @@
         <script type="text/javascript"><![CDATA[
             var emptyMesh = "static/meshes/emptyMesh.xml3d"
             var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
-            var spaceServerAddress = "sirikata://yellow.cg.uni-saarland.de:7777/"; // space server address
+            var spaceServerAddress = "sirikata://localhost:7777/"; // space server address
             
             // configure Web Workers
             Kata.WEB_WORKERS_ENABLED = false;
@@ -37,7 +37,7 @@
                             "Lemmings.ViewerScript",
                             {
                                 space: spaceServerAddress,
-                                visual: emptyMesh
+                                visual: {mesh: emptyMesh}
                             }
                         );
                         graphics = new Kata.GraphicsSimulation("XML3D", kata.getChannel(), document.getElementById("view"));

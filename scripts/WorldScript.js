@@ -102,7 +102,7 @@ Kata.require([
                 {
                     name: this.randomLemmingName(), // lemming's name
                     space: this.space, // space to connect to
-                    visual: this.lemmingMesh, // lemming's mesh
+                    visual: {mesh: this.lemmingMesh}, // lemming's mesh
                     loc: Lemmings.randomizePositionInXZ(this.worldBounds), // initial location
                     worldBounds: this.worldBounds, // position bounds
                     speed: this.lemmingSpeed, // lemming's speed
@@ -117,7 +117,7 @@ Kata.require([
                 "Lemmings.BoxScript",
                 {
                     space: this.space, // space to connect to
-                    visual: this.boxMesh, // box's mesh
+                    visual: {mesh: this.boxMesh}, // box's mesh
                     loc: Lemmings.randomizePositionInXZ(this.worldBounds), // initial location
                 });
     }
