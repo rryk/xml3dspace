@@ -175,38 +175,6 @@ Kata.require([
         }
     }
     
-    ////** Starts tracking process. This is only called for tracking radar. */
-    //Lemmings.Behavior.Radar.prototype.startTracking = function() {
-    //    // start regular updates
-    //    this.trackingInterval = window.setInterval(Kata.bind(this.updateRadar, this), 100);
-    //}
-    //
-    ////** Stops tracking process. This is only called for tracking radar. */
-    //Lemmings.Behavior.Radar.prototype.stopTracking = function() {
-    //    // stop regular updates
-    //    window.clearInterval(this.trackingInterval);
-    //}
-    //
-    ////** Maps 3D world coordinates to 2D canvas (X->X, Z->Y, Y is ignored) */
-    //Lemmings.Behavior.Radar.prototype.updateSVGPosition = function(objRemote, time) {
-    //    var objPos = objRemote.position(time);
-    //    
-    //    var x = 600 * (objPos[0] - this.parent.worldBounds[0]) / (this.parent.worldBounds[1] - this.parent.worldBounds[0]);
-    //    var y = 600 * (objPos[2] - this.parent.worldBounds[4]) / (this.parent.worldBounds[5] - this.parent.worldBounds[4]);
-    //    
-    //    objRemote.svgObj.setPosition(x, y);
-    //}
-    //
-    ////** Updates radar display */
-    //Lemmings.Behavior.Radar.prototype.updateRadar = function() {
-    //    // select the moment to compute object positions for
-    //    var now = new Date();
-    //    
-    //    // update all tracked objects
-    //    for (objid in this.trackedObjs)
-    //        this.updateSVGPosition(this.trackedObjs[objid], now);
-    //}
-    
     /** 
      * Stops tracking remote presence.
      *

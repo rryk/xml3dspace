@@ -24,6 +24,7 @@ Kata.require([
         this.speed = args.speed;
         this.worldBounds = args.worldBounds;
         this.loc = args.loc;
+        this.space = args.space;
         
         // initialize object list
         this.objects = {};
@@ -53,7 +54,7 @@ Kata.require([
         {
             var remote = this.getRemotePresence(remotePresenceID);
             var newObj = {
-                pos: remote.predictedPosition(new Date()),
+                pos: remote.predictedPosition(Kata.now(this.space)),
                 size: obj.size
             };
             this.objects[remotePresenceID.toString()] = newObj;
@@ -91,7 +92,7 @@ Kata.require([
             window.clearTimeout(this.planTimeout);
             
         // get current location
-        var now = new Date();
+        var now = Kata.now(this.space);
         var loc = this.presence.predictedLocationAtTime(now);
         
         if (loc.pos[0] < this.worldBounds[0]-1 || loc.pos[0] > this.worldBounds[1]+1 || loc.pos[2] < this.worldBounds[4]-1 || loc.pos[2] > this.worldBounds[5]+1) {

@@ -99,7 +99,7 @@ Kata.require([
     
     /** Updates positions of all objects on radar. */
     Lemmings.Behavior.RadarDisplay.prototype.update = function() {
-        var now = new Date();
+        var now = Kata.now(this.parent.space);
         for (var id in this.objects)
         {
             // retrieve current position
