@@ -14,6 +14,7 @@
         
         <!-- configuration -->
         <script type="text/javascript"><![CDATA[
+            var spaceServer = "sirikata://" + window.location.host + ":7777/";
             var staticWorldMesh = "static/meshes/staticWorld.xml3d";
             var lemmingMesh = "static/meshes/lemming.xml3d";
             var boxMesh = "static/meshes/box.xml3d";
@@ -24,6 +25,10 @@
             // configure Web Workers
             Kata.WEB_WORKERS_ENABLED = false;
             //Kata.bootstrapWorker = window.location.href + "/boostrapWorker.js";
+            
+            $(window).load(function(){
+                $("#server-address").val(spaceServer);
+            });
         ]]></script>
         
         <!-- main script -->
@@ -74,7 +79,7 @@
         <!--<div class="in-development">CONTROL PANEL IS <br/> UNDER DEVELOPMENT</div>-->
         <div id="buttons">
             <label for="server-address">Server address:</label>
-            <input id="server-address" value="sirikata://localhost:7777/" />
+            <input id="server-address" value="" />
             <button id="connectButton" onclick="connect($('#server-address').val(), staticWorldMesh)">Connect</button>
             <button id="disconnectButton" disabled="true">Disconnect</button>
             <label for="server-address">Create </label>

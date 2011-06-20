@@ -14,10 +14,10 @@
         
         <!-- configuration -->
         <script type="text/javascript"><![CDATA[
+            var spaceServer = "sirikata://" + window.location.host + ":7777/";
             var emptyScene = "static/meshes/emptyMesh.xml3d"
             var emptyMesh = "static/meshes/emptyMesh.xml3d"
             var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
-            var spaceServerAddress = "sirikata://localhost:7777/"; // space server address
             
             // configure Web Workers
             Kata.WEB_WORKERS_ENABLED = false;
@@ -37,7 +37,7 @@
                             kata_base_offset + "scripts/ViewerScript.js",
                             "Lemmings.ViewerScript",
                             {
-                                space: spaceServerAddress,
+                                space: spaceServer,
                                 visual: {mesh: emptyMesh}
                             }
                         );
