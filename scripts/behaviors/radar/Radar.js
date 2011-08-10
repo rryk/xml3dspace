@@ -3,217 +3,159 @@ if (typeof(Lemmings.Behavior) === "undefined") Lemmings.Behavior = {};
 
 Kata.require([
     ['externals/protojs/protobuf.js', 'externals/protojs/pbj.js'],
-    kata_base_offset + 'scripts/behaviors/radar/Radar.pbj.js'
+    kata_base_offset + 'scripts/behaviors/radar/Radar.pbj.js',
+    'katajs/core/PresenceID.js'
 ], function() {
 
-    /** 
-     * Constructs new radar behavior. Radar is designed to track other objects
-     * in the world, that have the same behaviour and marked as trackable. It
-     * supports tracking objects from multiple spaces (parent script needs to
-     * connect to each such space).
-     *
-     * @param parent parent object script
-     * @isTrackable defines whether this object is trackable
-     */
     Lemmings.Behavior.Radar = function(parent, isTrackable, startTrackingCallback, stopTrackingCallback) {
         // save parent object script and register with it
-        this.parent = parent;
-        this.parent.addBehavior(this);
+        this.mParent = parent;
+        this.mParent.addBehavior(this);
         
         // save trackable flag
-        this.isTrackable = isTrackable;
+        this.mTrackable = isTrackable;
         
         // save callbacks
-        this.startTrackingCallback = startTrackingCallback;
-        this.stopTrackingCallback = stopTrackingCallback;
+        this.mStartTrackingCallback = startTrackingCallback;
+        this.mStopTrackingCallback = stopTrackingCallback;
         
         // init arrays
-        this.trackedObjs = {};
-        this.odpPorts = {};
-        this.delayedRP = {};
-        this.registeredRP = {};
+        this.mTrackedObjs = {};
+        this.mODPPorts = {};
+        this.mDelayedRP = {};
+        this.mRegisteredRP = {};
     }
     
     // Port used for communication with radar
     Lemmings.Behavior.Radar.prototype.ProtocolPort = 15;
     
-    /** 
-     * Return existing or create new ODP port for the presence. 
-     *
-     * @param presenceID Presence ID.
-     */
-    Lemmings.Behavior.Radar.prototype.getODPPort = function(presence) {
-        var presenceID = presence.id();
-        if (!this.odpPorts[presenceID])
+    Lemmings.Behavior.Radar.prototype._getODPPort = function(presence) {
+        var spaceID = presence.space();
+        if (!this.mODPPorts[spaceID])
         {
             var odpPort = presence.bindODPPort(this.ProtocolPort);
-            odpPort.receive(Kata.bind(this.handleMessage, this, presenceID));
-            this.odpPorts[presenceID] = odpPort;
+            odpPort.receive(Kata.bind(this._handleMessage, this, spaceID));
+            this.mODPPorts[spaceID] = odpPort;
         }
         
-        return this.odpPorts[presenceID];
+        return this.mODPPorts[spaceID];
     }
     
-    /** 
-     * Callback for new or invalidated remote presences. Trackable objects send track message to
-     * all other objects in the scene, so that they can track us. We also check every object that
-     * have left and remove them from they list of tracked objects if needed.
-     * 
-     * @param presence Our presence.
-     * @param remote Remote presence.
-     * @param added Flag that denotes whether remote object was created (true) or removed (false).
-     */
     Lemmings.Behavior.Radar.prototype.remotePresence = function(presence, remote, added) {
         //console.log("Radar::remotePresence(presence=" + presence.id() + ", remote=" + remote.id() + ", added=" + (added?"true":"false") + ")");
         
         if (added) {
-            if (this.isTrackable)
+            if (this.mTrackable)
             {
                 // create an intro message
                 var trackMsg = new Radar.Protocol.Track();
-                if (this.parent.getName)
-                    trackMsg.name = this.parent.getName();
-                trackMsg.type = this.parent.getType();
-                trackMsg.size = this.parent.getSize();
+                trackMsg.type = this.mParent.getType();
                 var containerMsg = new Radar.Protocol.Container();
                 containerMsg.track = trackMsg;
                 
                 // send the intro message
-                this.getODPPort(presence).send(remote.endpoint(this.ProtocolPort), Lemmings.serializeMessage(containerMsg));
+                this._getODPPort(presence).send(remote.endpoint(this.ProtocolPort), Lemmings.serializeMessage(containerMsg));
             }
             
             // register remote presence
             var rpKey = remote.presenceID().toString();
-            this.registeredRP[rpKey] = true;
+            this.mRegisteredRP[rpKey] = true;
             
             // start tracking delayed objects
-            var delayedRP = this.delayedRP[rpKey];
+            var delayedRP = this.mDelayedRP[rpKey];
             if (delayedRP && delayedRP.push)
                for (var i = 0; i < delayedRP.length; i++)
                    delayedRP[i]();
         } else {
             // unregister remote presence
-            delete this.registeredRP[remote.presenceID()];
+            delete this.mRegisteredRP[remote.presenceID()];
         
-            if (this.trackedObjs[remote.id()])
-                this.stopTracking(presence, remote.presenceID());
+            if (this.mTrackedObjs[remote.space()][remote.object()])
+                this._stopTracking(presence, remote.presenceID());
         }
     }
     
-    /** 
-     * Callback for each new presence. We have a separate presence in
-     * each space that we connect to.
-     */
     Lemmings.Behavior.Radar.prototype.newPresence = function(presence) {
         //console.log("Radar::newPresence(presence=" + presence.id() + ")");
         
         // create ODP port and start listening to messages
-        this.getODPPort(presence);
+        this._getODPPort(presence);
     }
     
-    /** 
-     * Retuns anassociative array of tracked object for presence, where object ID
-     * id used for indexing. If presence is not specified, then retuns list of all
-     * tracked objects by presence. In the latter case array is indexed by presence
-     * ID, each containing an associative array indexed by object ID.
-     */
-    Lemmings.Behavior.Radar.prototype.listTrackedObjects = function(presence) {
-        if (presence)
-            if (this.trackedObjs[presence])
-                return this.trackedObjs[presence];
+    Lemmings.Behavior.Radar.prototype.listTrackedObjects = function(spaceID) {
+        if (spaceID)
+            if (this.mTrackedObjs[spaceID])
+                return this.mTrackedObjs[spaceID];
             else
                 return {};
         else
-            return this.trackedObjs;
+            return this.mTrackedObjs;
     }
     
-    /** Callback for invalidated presence in the space. */
     Lemmings.Behavior.Radar.prototype.presenceInvalidated = function(presence) {
         // stop tracking all objects from the same presence
-        var presenceID = presence.id();
-        if (this.trackedObjs[presenceID])
-            for (var i in this.trackedObjs[presenceID])
-                this.stopTracking(presenceID, i);
+        if (this.mTrackedObjs[presence.space()])
+            for (var objectID in this.mTrackedObjs[presence.space()])
+                this._stopTracking(spaceID, objectID);
         
         // close and remove port
-        this.getODPPort(presence).close();
-        delete this.odpPorts[presenceID];
+        this._getODPPort(presence).close();
+        delete this.mODPPorts[presence.space()];
     }
     
-    /** 
-     * Starts tracking remote object. This is only called for tracking radar.
-     *
-     * @param presence Our presence.
-     * @param remoteID Remote presence ID.
-     * @param trackMsg Track message that was received.
-     */
-    Lemmings.Behavior.Radar.prototype.startTracking = function(presenceID, remotePresenceID, trackMsg) {
+    Lemmings.Behavior.Radar.prototype._startTracking = function(spaceID, objectID, trackMsg) {
         //console.log("Radar::startTracking(presenceID=" + presenceID + ", remotePresenceID=" + remotePresenceID.object() +", trackMsg)");
         
         // add remote presence for tracking
-        var remoteID = remotePresenceID.object();
-        if (!this.trackedObjs[presenceID]) 
-            this.trackedObjs[presenceID] = {};
-        this.trackedObjs[presenceID][remoteID] = {
-            name: trackMsg.name,
-            type: trackMsg.type,
-            size: trackMsg.size
+        if (!this.mTrackedObjs[spaceID])
+            this.mTrackedObjs[spaceID] = {};
+        this.mTrackedObjs[spaceID][objectID] = {
+            type: trackMsg.type
         };
         
         // notify parent script
-        if (this.startTrackingCallback)
+        if (this.mStartTrackingCallback)
         {
-            var rpKey = remotePresenceID.toString();
-            if (this.registeredRP[rpKey]) {
-                this.startTrackingCallback(presenceID, remotePresenceID, this.trackedObjs[presenceID][remoteID]);
+            var rpKey = new Kata.PresenceID(spaceID, objectID).toString();
+            if (this.mRegisteredRP[rpKey]) {
+                this.mStartTrackingCallback(spaceID, objectID, this.mTrackedObjs[spaceID][objectID]);
             } else {
-                this.delayedRP[rpKey] = this.delayedRP[rpKey] ? this.delayedRP[remotePresenceID] : [];
-                this.delayedRP[rpKey].push(
-                    Kata.bind(this.startTrackingCallback, this, presenceID, remotePresenceID, this.trackedObjs[presenceID][remoteID])
+                this.mDelayedRP[rpKey] = this.mDelayedRP[rpKey] ? this.mDelayedRP[rpKey] : [];
+                this.mDelayedRP[rpKey].push(
+                    Kata.bind(this.mStartTrackingCallback, this, spaceID, objectID, this.mTrackedObjs[spaceID][objectID])
                 );
             }
         }
     }
     
-    /** 
-     * Stops tracking remote presence.
-     *
-     * @param presence Our presence.
-     * @param remoteID Remote presence ID.
-     */
-    Lemmings.Behavior.Radar.prototype.stopTracking = function(presenceID, remotePresenceID) {
-        var remoteID = remotePresenceID.object();
-        if (!this.trackedObjs[presenceID] || !this.trackedObjs[presenceID][remoteID]) {
+    Lemmings.Behavior.Radar.prototype._stopTracking = function(spaceID, objectID) {
+        if (!this.mTrackedObjs[spaceID] || !this.mTrackedObjs[spaceID][objectID]) {
             Kata.warn("Tried to stop tracking object that is not tracked.");
             return;
         }
         
         // remove remote presence from tracking array
-        delete this.trackedObjs[presenceID][remoteID];
+        delete this.mTrackedObjs[spaceID][objectID];
         
         // notify the parent script
-        if (this.stopTrackingCallback)
-            this.stopTrackingCallback(presenceID, remotePresenceID);
+        if (this.mStopTrackingCallback)
+            this.mStopTrackingCallback(spaceID, objectID);
     }
     
-    
-    
-    /** 
-     * Handle incoming messages.
-     *
-     * @param presenceID ID of the presence that has receive the message.
-     * @param src Source ODP endpoint.
-     * @param dest Destination ODP endpoint.
-     * @param payload Byte-stream payload.
+    /** Callback for incoming messages.
+     *  @param {String} spaceID space identifier
+     *  @param {Kata.ODP.Endpoint} src source endpoint
+     *  @param {Kata.ODP.Endpoint} dest destination endpoint
+     *  @param {Array} payload message itself (byte array)
      */
-    Lemmings.Behavior.Radar.prototype.handleMessage = function(presenceID, src, dest, payload) {
+    Lemmings.Behavior.Radar.prototype._handleMessage = function(spaceID, src, dest, payload) {
         // deserialize message
         var containerMsg = new Radar.Protocol.Container();
         containerMsg.ParseFromStream(new PROTO.ByteArrayStream(payload));
         
         // handle track message
         if (containerMsg.HasField("track")) {
-            this.startTracking(presenceID, src.presenceID(), containerMsg.track);
+            this._startTracking(spaceID, src.object(), containerMsg.track);
         }
     }
 

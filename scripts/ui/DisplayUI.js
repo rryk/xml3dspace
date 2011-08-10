@@ -51,7 +51,6 @@ Kata.require([
            var radius = size * this.scale; // map size to radius
            svgObj.setAttribute("r", size * this.scale);
            svgObj.setAttribute("class", "lemming");
-           svgObj.setAttribute("title", name);
            svgObj.style.display = "none";
            svgObj.setPosition = function(x, y) {
                svgObj.setAttribute("cx", x);
@@ -70,6 +69,8 @@ Kata.require([
                svgObj.setAttribute("y", y - sideLen / 2);
                svgObj.style.display = "";
            }
+        } else {
+            Kata.warn("Unknown object type");
         }
         
         // append SVG object to the DOM

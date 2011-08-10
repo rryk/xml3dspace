@@ -10,6 +10,11 @@ Kata.require([
         // call parent constructor
         SUPER.constructor.call(this, channel, args, function() {});
         
+        // set object scale (translates into bounding sphere)
+        if (!args.loc)
+            args.loc = Kata.LocationIdentityNow();
+        args.loc.scale = [0, 0, 0, 1];
+
         // connect to the space server
         this.connect(args, null, Kata.bind(this.connected, this));
         
@@ -40,11 +45,6 @@ Kata.require([
     // return object's type
     Lemmings.BoxScript.prototype.getType = function() {
         return "box";
-    }
-    
-    // return object's type
-    Lemmings.BoxScript.prototype.getSize = function() {
-        return 1;
     }
     
 }, kata_base_offset + "scripts/BoxScript.js");

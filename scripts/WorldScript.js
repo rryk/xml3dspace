@@ -73,40 +73,21 @@ Kata.require([
         this._disconnect(presence);
     }
     
-    // generates unique lemming names (numbers)
-    Lemmings.WorldScript.prototype.randomLemmingName = function() {
-        var lemmingNames = ["Aturo", "Uvese", "Onyu", "Ingll", "Yundu", "Uanga", "Ayeri",
-            "Ardck", "Qued", "Denlt", "Teylt", "Yah", "Tooy", "Morlt", "Iwara", "Turm", 
-            "Rothnn", "Schiz", "Uimi", "Atd", "Oldst", "Uatha", "Lleid", "Ainau", "Ukimi", 
-            "Kooss", "Emnn", "Nays", "Rais", "Llist", "Serz", "Zhich", "Ert", "Warn",
-            "Orilo", "Luis", "Dreall", "Lod", "Arg", "Uyeru", "Estf", "Staun", "Wheart", 
-            "Tonw", "Nalk", "Echay", "Ichay", "Rhoy", "Ithery", "Engs", "Rend", "Skelh", 
-            "Toil", "Sliant", "Etc", "Rop", "Naeph", "Tiam", "Lleel", "Loc", "Echn", 
-            "Lok", "Streyth", "Udary", "Zhyl", "Iny", "Niant", "Euntu", "Emz", "Boin", 
-            "Shed", "Ans", "Feyl", "Verv", "Kinh", "Doer", "Hatl", "Smaut", "Sliec", 
-            "Zhel", "Ogara", "Schoid", "Dain", "Oesso", "Aqua", "Yeyck", "Saych", "Yendo", 
-            "Keyn", "Risg", "Soin", "Angd", "Skelm", "Ums", "Einae", "Honth", "Echw", 
-            "Ormb", "Thaul", "Quast", "Ealda", "Undck", "Iasha", "Versh", "Esulo", 
-            "Irothe", "Staun", "Arf", "Ceas", "Zym", "Itt", "Buil", "Wors", "Sayr", 
-            "Eisa", "Pir", "Veun", "Atn", "Wark"];
-            
-        return lemmingNames[Math.floor(Math.random() * lemmingNames.length)];
-    }
-    
     // create a lemming
     Lemmings.WorldScript.prototype.createLemming = function() {
         for (var i = 0; i < $("#numberToCreate").val(); i++)            
+        {
             this.createObject(
                 kata_base_offset + "scripts/LemmingScript.js", 
                 "Lemmings.LemmingScript",
                 {
-                    name: this.randomLemmingName(), // lemming's name
                     space: this.space, // space to connect to
                     visual: {mesh: this.lemmingMesh}, // lemming's mesh
                     loc: Lemmings.randomizePositionInXZ(this.worldBounds), // initial location
                     worldBounds: this.worldBounds, // position bounds
                     speed: this.lemmingSpeed, // lemming's speed
                 });
+        }
     }
     
     // create a box

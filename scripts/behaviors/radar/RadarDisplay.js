@@ -2,7 +2,8 @@ if (typeof(Lemmings) === "undefined") Lemmings = {};
 if (typeof(Lemmings.Behavior) === "undefined") Lemmings.Behavior = {};
 
 Kata.require([
-    kata_base_offset + 'scripts/Tools.js'
+    kata_base_offset + 'scripts/Tools.js',
+    'katajs/core/PresenceID.js'
 ], function() {
 
     /** 
@@ -13,21 +14,18 @@ Kata.require([
      */
     Lemmings.Behavior.RadarDisplay = function(parent, worldBounds, updateInterval) {
         // save parent object script and register with it
-        this.parent = parent;
-        this.parent.addBehavior(this);
-        
-        // init tracked objects array
-        this.trackedObjs = {};
+        this.mParent = parent;
+        this.mParent.addBehavior(this);
         
         // initialize object list
-        this.objects = {};
-        this.numObjects = 0;
+        this.mObjects = {};
+        this.mNumObjects = 0;
         
         // save world bounds
-        this.worldBounds = worldBounds;
+        this.mWorldBounds = worldBounds;
         
         // save update interval
-        this.updateInterval = updateInterval ? updateInterval : 100;
+        this.mUpdateInterval = updateInterval ? updateInterval : 100;
     }
     
     /** Returns start tracking callback */
@@ -40,43 +38,46 @@ Kata.require([
         return Kata.bind(this.stopTracking, this);
     }
     
-    /** 
-     * Starts tracking object on the radar display.
+    /** Starts tracking object on the radar display.
      *
-     * @param presenceID Our presence ID.
-     * @param remotePresenceID Object's remote presence ID.
-     * @param obj Info on object to be tracked.
+     *  @param spaceID Space identifier.
+     *  @param objectID Object identifier.
+     *  @param object Object record.
      */
-    Lemmings.Behavior.RadarDisplay.prototype.startTracking = function(presenceID, remotePresenceID, obj) {
-        var id = remotePresenceID.toString();
-        if (this.objects[id]) {
+    Lemmings.Behavior.RadarDisplay.prototype.startTracking = function(spaceID, objectID, object) {
+        var remotePresenceID = new Kata.PresenceID(spaceID, objectID);
+        var rpKey = remotePresenceID.toString();
+        if (this.mObjects[rpKey]) {
             Kata.warn("Tried to start tracking an object twice.");
             return;
         }
         
+        // add object to the tracking object list
+        this.mObjects[rpKey] = this.mParent.getRemotePresence(remotePresenceID);
+        this.mNumObjects++;
+
         // send create message to DisplayUI
         var msg = new Kata.ScriptProtocol.FromScript.GUIMessage("display", {
             action: "create",
-            id: id,
-            type: obj.type,
-            size: obj.size,
-            name: obj.name
+            id: rpKey,
+            type: object.type,
+            size: this.mObjects[rpKey].predictedScale()[3]
         });
-        this.parent._sendHostedObjectMessage(msg);
-        
-        // add object to the tracking object list
-        this.objects[id] = this.parent.getRemotePresence(remotePresenceID);
-        this.numObjects++;
+        this.mParent._sendHostedObjectMessage(msg);
         
         // start tracking if needed
-        if (this.numObjects == 1)
-            this.updateIntervalHandle = setInterval(Kata.bind(this.update, this), this.updateInterval);
+        if (this.mNumObjects == 1)
+            this.mUpdateIntervalHandle = setInterval(Kata.bind(this.update, this), this.mUpdateInterval);
     }
     
-    /** Stops tracking the object. */
-    Lemmings.Behavior.RadarDisplay.prototype.stopTracking = function(presenceID, remotePresenceID) {
-        var id = remotePresenceID.toString();
-        if (!this.objects[id]) {
+    /** Stops tracking the object.
+     *
+     *  @param spaceID Space identifier.
+     *  @param objectID Object identifier.
+     */
+    Lemmings.Behavior.RadarDisplay.prototype.stopTracking = function(spaceID, objectID) {
+        var id = new PresenceID(spaceID, objectID).toString();
+        if (!this.mObjects[id]) {
             Kata.warn("Tried to stop tracking the object that is not tracked.");
             return;
         }
@@ -86,24 +87,24 @@ Kata.require([
             action: "delete",
             id: id,
         });
-        this.parent._sendHostedObjectMessage(msg);
+        this.mParent._sendHostedObjectMessage(msg);
         
         // remove object from the tracking object list
-        delete this.objects[id];
-        this.numObjects--;
+        delete this.mObjects[id];
+        this.mNumObjects--;
         
         // stop tracking if needed
-        if (this.numObjects == 0)
-            clearInterval(this.updateIntervalHandle);
+        if (this.mNumObjects == 0)
+            clearInterval(this.mUpdateIntervalHandle);
     }
     
     /** Updates positions of all objects on radar. */
     Lemmings.Behavior.RadarDisplay.prototype.update = function() {
-        var now = Kata.now(this.parent.space);
-        for (var id in this.objects)
+        var now = Kata.now(this.mParent.space);
+        for (var id in this.mObjects)
         {
             // retrieve current position
-            var obj = this.objects[id];
+            var obj = this.mObjects[id];
             var position = obj.position(now);
             
             // send move message to DisplayUI
@@ -114,7 +115,7 @@ Kata.require([
                     id: id,
                     pos: position
                 });
-                this.parent._sendHostedObjectMessage(msg);
+                this.mParent._sendHostedObjectMessage(msg);
                 obj.lastPosition = position;
             } 
         }
