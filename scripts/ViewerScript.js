@@ -37,12 +37,30 @@ Kata.require([
         // initialize proximity handler
         presence.setQueryHandler(Kata.bind(this.proxEvent, this));
         presence.setQuery(0);
+
+        // set up debug callbacks
+        $("#debug1").click(Kata.bind(this.debug1, this));
+        
+        // set up camera sync
+        this.mCamUpdateTimer = setInterval(Kata.bind(this.updateCamera, this), 60);
+        this.syncCamera();
+    }
+
+    /* Debug callbacks */
+    Lemmings.ViewerScript.prototype.debug1 = function()
+    {
+        var loc = Kata.LocationIdentityNow();
+        loc.pos = [-4, 3, 1];
+        
+        this.presence.setLocation(loc);
     }
     
-    // proximity callback
-    Lemmings.ViewerScript.prototype.proxEvent = function(remote, added) {
-        if (added)
-            this.presence.subscribe(remote.id());
+    /** Camera sync */
+    Lemmings.ViewerScript.prototype.syncCamera = function() {
+        var now = new Date();
+        this.setCameraPosOrient(this.presence.predictedPosition(now),
+                                this.presence.predictedOrientation(now),
+                                0.0);
     };
     
 }, kata_base_offset + "scripts/ViewerScript.js");
