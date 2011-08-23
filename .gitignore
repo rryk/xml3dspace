@@ -9,7 +9,7 @@ externals/*.htm
 externals/*.html
 
 # Proprietary models/scenes
-static/proprietary/
+cdn/prop/
 
 # lighttpd logs
 lighttpd.cfg

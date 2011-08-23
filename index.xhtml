@@ -6,22 +6,52 @@
         <title>LemmiSpace</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-        <!-- Modernizer is used to detect supported technologies in the browser -->
-        <script type="text/javascript" src="externals/modernizer/modernizr-1.7.min.js"></script>
-        
         <!-- jQuery simplified Web/JavaScript development -->
-        <script type="text/javascript" src="externals/jquery/jquery-1.6.1.min.js"></script>
+        <script type="text/javascript" src="externals/jquery/jquery-1.6.1.js"></script>
 
         <!-- KataJS simplifies development of the Sirikata ObjectHost in the browser -->
         <script type="text/javascript" src="externals/katajs/katajs/core/Core.js"></script>
-                
-        <!-- This script initialized KataJS and loads virtual world -->
-        <script><![CDATA[
-            $(window).load(function(){
-                
+
+        <!-- configuration -->
+        <script type="text/javascript"><![CDATA[
+            var spaceServer = "sirikata://" + window.location.host + ":7777/";
+            var emptyScene = "static/meshes/emptyMesh.xml3d"
+            var emptyMesh = "static/meshes/emptyMesh.xml3d"
+            var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
+
+            // configure Web Workers
+            Kata.WEB_WORKERS_ENABLED = false;
+            //Kata.bootstrapWorker = window.location.href + "/boostrapWorker.js";
+        ]]></script>
+
+        <!-- main script -->
+        <script type="text/javascript"><![CDATA[
+            $(window).load(function() {
+                Kata.require([
+                    'katajs/oh/MainThread.js', // to create MainThread object
+                    'katajs/gfx/xml3dgfx.js', // XML3D Graphics Simulation
+                    'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // to use sirikata://.../ protocol
+                ], function() {
+                    Kata.GraphicsSimulation.initializeDriver("XML3D", emptyScene, function() {
+                        kata = new Kata.MainThread(
+                            kata_base_offset + "scripts/AvatarScript.js",
+                            "FIContent.AvatarScript",
+                            {
+                                space: spaceServer,
+                                visual: {mesh: emptyMesh}
+                            }
+                        );
+                        graphics = new Kata.GraphicsSimulation("XML3D", kata.getChannel(), document.getElementById("view"));
+                    });
+                });
             });
         ]]></script>
+
+        <!-- Load style for the viewer interface -->
+        <link type="text/css" href="style/style-common.css" rel="stylesheet" media="all" />
+        <link type="text/css" href="style/style-viewer.css" rel="stylesheet" media="all" />
     </head>
     <body>
+        <div id="view" />
     </body>
 </html>
