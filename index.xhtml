@@ -3,7 +3,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>LemmiSpace</title>
+        <title>FI-Content Demo</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
         <!-- jQuery simplified Web/JavaScript development -->
@@ -14,9 +14,10 @@
 
         <!-- configuration -->
         <script type="text/javascript"><![CDATA[
-            var spaceServer = "sirikata://" + window.location.host + ":7777/";
-            var emptyScene = "static/meshes/emptyMesh.xml3d"
-            var emptyMesh = "static/meshes/emptyMesh.xml3d"
+            //var spaceServer = "sirikata://" + window.location.host + ":7777/";
+            var spaceServer = "sirikata://yellow.cg.uni-saarland.de:7777/";
+            var avatarMesh = "cdn/prop/amber.xml3d";
+            var worldMesh = "cdn/simpleWorld.xml3d";
             var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
 
             // configure Web Workers
@@ -32,13 +33,19 @@
                     'katajs/gfx/xml3dgfx.js', // XML3D Graphics Simulation
                     'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // to use sirikata://.../ protocol
                 ], function() {
-                    Kata.GraphicsSimulation.initializeDriver("XML3D", emptyScene, function() {
+                    Kata.GraphicsSimulation.initializeDriver("XML3D", worldMesh, function() {
                         kata = new Kata.MainThread(
                             kata_base_offset + "scripts/AvatarScript.js",
                             "FIContent.AvatarScript",
                             {
                                 space: spaceServer,
-                                visual: {mesh: emptyMesh}
+                                loc: {
+                                    scale: [0, 0, 0, 1],
+                                    pos: [0, 0, 0]
+                                },
+                                visual: {
+                                    mesh: avatarMesh
+                                }
                             }
                         );
                         graphics = new Kata.GraphicsSimulation("XML3D", kata.getChannel(), document.getElementById("view"));
