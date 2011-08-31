@@ -15,7 +15,8 @@
         <!-- configuration -->
         <script type="text/javascript"><![CDATA[
             //var spaceServer = "sirikata://" + window.location.host + ":7777/";
-            var spaceServer = "sirikata://yellow.cg.uni-saarland.de:7777/";
+            //var spaceServer = "sirikata://yellow.cg.uni-saarland.de:7777/";
+            var spaceServer = "loop://localhost:7777/";
             var avatarMesh = "cdn/prop/amber.xml3d";
             var worldMesh = "cdn/simpleWorld.xml3d";
             var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
@@ -32,6 +33,7 @@
                     'katajs/oh/MainThread.js', // to create MainThread object
                     'katajs/gfx/xml3dgfx.js', // XML3D Graphics Simulation
                     'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // to use sirikata://.../ protocol
+                    'katajs/oh/plugins/loop/LoopbackSpaceConnection.js', // to use loop://.../ protocol
                 ], function() {
                     Kata.GraphicsSimulation.initializeDriver("XML3D", worldMesh, function() {
                         kata = new Kata.MainThread(
