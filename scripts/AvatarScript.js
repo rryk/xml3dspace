@@ -83,7 +83,7 @@ Kata.require([
 
         else if (msgType == "drag")
         {
-            var pixelsFor360Turn = 500; // mouse sensitivity
+            var pixelsFor360Turn = 400; // mouse sensitivity
 
             // rotate camera
             if (this.originalOrientation !== undefined)
@@ -102,9 +102,11 @@ Kata.require([
                 var angle = xml3dNewOrient.angle;
 
                 // update location
-                var loc = this.presence.predictedLocation();
+                var loc = this.presence.predictedLocationAtTime(new Date());
+                console.log("2a: loc.orientBefore = [" + loc.orient + "]");
                 loc.orient = Kata._helperQuatFromAxisAngle(axis, angle);
                 this.presence.setLocation(loc);
+                console.log("2b: loc.pos = [" + loc.pos + "], loc.orient = [" + loc.orient + "], loc.vel = [" + loc.vel + "]");
             }
 
             // TODO: correct avatar mesh
@@ -123,8 +125,8 @@ Kata.require([
         {
             var avMat = Kata.QuaternionToRotation(this.presence.predictedOrientation(new Date()));
 
-            var avSpeed = 1;
-            var full_rot_seconds = 10.0;
+            var avSpeed = 2;
+            var full_rot_seconds = 14.0;
 
             var avXX = avMat[0][0] * avSpeed;
             var avXY = avMat[0][1] * avSpeed;
@@ -135,7 +137,9 @@ Kata.require([
             this.keyIsDown[msg.keyCode] = true;
 
             if (this.keyIsDown[this.Keys.UP]||this.keyIsDown[this.Keys.W]) {
+                var loc = this.presence.predictedLocationAtTime(new Date());
                 this.presence.setVelocity([-avZX, -avZY, -avZZ]);
+                console.log("1b: loc.pos = [" + loc.pos + "], loc.orient = [" + loc.orient + "], loc.vel = [" + loc.vel + "]");
             }
 
             if (this.keyIsDown[this.Keys.DOWN]||this.keyIsDown[this.Keys.S]) {
@@ -157,7 +161,7 @@ Kata.require([
     }
 
     FIContent.AvatarScript.prototype.move = function(toPos) {
-        var locFrom = this.presence.predictedLocation();
+        var locFrom = this.presence.predictedLocationAtTime(new Date());
 
         // TODO: implement movement along bezier curve
         console.log("walk to " + newPos[0] + " " + newPos[1] + " " + newPos[2]);
