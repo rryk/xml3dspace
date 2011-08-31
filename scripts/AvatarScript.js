@@ -15,6 +15,8 @@ Kata.require([
 
         // connect to the space server
         this.connect(args, null, Kata.bind(this.connected, this));
+
+        this.keyIsDown = {};
     };
     Kata.extend(FIContent.AvatarScript, SUPER);
 
@@ -44,6 +46,17 @@ Kata.require([
         this._sendHostedObjectMessage(gfxmsg);
     }
 
+    FIContent.AvatarScript.prototype.Keys = {
+        UP : 38,
+        DOWN : 40,
+        LEFT : 37,
+        RIGHT : 39,
+        W : 87,
+        A : 65,
+        S : 83,
+        D : 68
+    };
+
     // Handle incoming GUI messages
     FIContent.AvatarScript.prototype._handleGUIMessage = function(channel, msg) {
         // call to parent class
@@ -64,11 +77,10 @@ Kata.require([
             if (FIContent.compareReal(this.lastPickMessage.pos[upAxis], groundLevel))
             {
                 var newPos = this.lastPickMessage.pos;
-
-                // TODO: walk to a new position (this.lastPickMessage.position)
-                console.log("walk to " + newPos[0] + " " + newPos[1] + " " + newPos[2]);
+                this.move(newPos);
             }
         }
+
         else if (msgType == "drag")
         {
             var pixelsFor360Turn = 500; // mouse sensitivity
@@ -95,10 +107,60 @@ Kata.require([
                 this.presence.setLocation(loc);
             }
 
-            // TODO: walking using keys
             // TODO: correct avatar mesh
             // TODO: implement animations
         }
+        else if (msg.msg == "keyup")
+        {
+            this.keyIsDown[msg.keyCode] = false;
+
+            if ( !this.keyIsDown[this.Keys.UP] && !this.keyIsDown[this.Keys.DOWN])
+                this.presence.setVelocity([0, 0, 0]);
+            if ( !this.keyIsDown[this.Keys.LEFT] && !this.keyIsDown[this.Keys.RIGHT])
+                this.presence.setAngularVelocity(Kata.Quaternion.identity());
+        }
+        else if (msg.msg == "keydown")
+        {
+            var avMat = Kata.QuaternionToRotation(this.presence.predictedOrientation(new Date()));
+
+            var avSpeed = 1;
+            var full_rot_seconds = 10.0;
+
+            var avXX = avMat[0][0] * avSpeed;
+            var avXY = avMat[0][1] * avSpeed;
+            var avXZ = avMat[0][2] * avSpeed;
+            var avZX = avMat[2][0] * avSpeed;
+            var avZY = avMat[2][1] * avSpeed;
+            var avZZ = avMat[2][2] * avSpeed;
+            this.keyIsDown[msg.keyCode] = true;
+
+            if (this.keyIsDown[this.Keys.UP]||this.keyIsDown[this.Keys.W]) {
+                this.presence.setVelocity([-avZX, -avZY, -avZZ]);
+            }
+
+            if (this.keyIsDown[this.Keys.DOWN]||this.keyIsDown[this.Keys.S]) {
+                this.presence.setVelocity([avZX, avZY, avZZ]);
+            }
+
+            if (this.keyIsDown[this.Keys.LEFT]||this.keyIsDown[this.Keys.A]) {
+                this.presence.setAngularVelocity(
+                    Kata.Quaternion.fromAxisAngle([0, 1, 0], 2.0*Math.PI/full_rot_seconds)
+                );
+            }
+            if (this.keyIsDown[this.Keys.RIGHT]||this.keyIsDown[this.Keys.D]) {
+                this.presence.setAngularVelocity(
+                    Kata.Quaternion.fromAxisAngle([0, 1, 0], -2.0*Math.PI/full_rot_seconds)
+                );
+            }
+        }
+
+    }
+
+    FIContent.AvatarScript.prototype.move = function(toPos) {
+        var locFrom = this.presence.predictedLocation();
+
+        // TODO: implement movement along bezier curve
+        console.log("walk to " + newPos[0] + " " + newPos[1] + " " + newPos[2]);
     }
 
     // Camera sync (modified code from BlessedScript.js)
