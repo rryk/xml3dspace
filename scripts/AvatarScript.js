@@ -17,7 +17,12 @@ Kata.require([
         // connect to the space server
         this.connect(args, null, Kata.bind(this.connected, this));
 
+        // info about pressed keys
         this.keyIsDown = {};
+
+        // initial camera offsets
+        this.cameraOrientOffset = Kata.Quaternion.identity();
+        this.cameraPosOffset = [0, 2, 5];
 
         // add animated behavior
         this.mAnimatedBehavior =
@@ -98,9 +103,15 @@ Kata.require([
         if (msgType == "pick")
             this.lastPickMessage = msg;
         else if (msgType == "mouseup")
-            this.originalOrientation = undefined;
+        {
+            this.originalCamOrient = undefined;
+            this.originalCamPosition = undefined;
+        }
         else if (msgType == "mousedown")
-            this.originalOrientation = this.presence.predictedOrientation(new Date());
+        {
+            this.originalCamOrient = this.cameraOrientOffset;
+            this.originalCamPosition = this.cameraPosOffset;
+        }
         else if (msgType == "click")
         {
             var groundLevel = 0.0;
@@ -115,32 +126,44 @@ Kata.require([
 
         else if (msgType == "drag")
         {
-            var pixelsFor360Turn = 400; // mouse sensitivity
-
-            // rotate camera
-            if (this.originalOrientation !== undefined)
+            if (msg.event.button == 0)
             {
-                // convert original orientation into XML3DRotation
-                var origOrient = this.originalOrientation;
-                var xml3dOrient = new XML3DRotation();
-                xml3dOrient.setQuaternion(new XML3DVec3(origOrient[0], origOrient[1], origOrient[2]), origOrient[3]);
+                var pixelsFor360Turn = 400; // mouse sensitivity
 
-                // create rotation
-                var xml3dRot = new XML3DRotation(new XML3DVec3(0, 1, 0), -(msg.dx / pixelsFor360Turn) * 2 * Math.PI);
+                // rotate camera
+                if (this.originalCamOrient !== undefined)
+                {
+                    // get current offset
+                    var curOffset = new XML3DRotation();
+                    var origOrient = this.originalCamOrient;
+                    curOffset.setQuaternion(new XML3DVec3(origOrient[0], origOrient[1],
+                        origOrient[2]), origOrient[3]);
 
-                // compute final orientation
-                var xml3dNewOrient = xml3dOrient.multiply(xml3dRot);
-                var axis = [xml3dNewOrient.axis.x, xml3dNewOrient.axis.y, xml3dNewOrient.axis.z];
-                var angle = xml3dNewOrient.angle;
+                    // compute added offset
+                    var addedOffset = new XML3DRotation(new XML3DVec3(0, 1, 0),
+                        -(msg.dx / pixelsFor360Turn) * 2 * Math.PI);
 
-                // update location
-                var loc = this.presence.predictedLocationAtTime(new Date());
-                loc.orient = Kata._helperQuatFromAxisAngle(axis, angle);
-                this.presence.setLocation(loc);
+                    // combine and update current offset
+                    var newOffset = curOffset.multiply(addedOffset);
+                    this.cameraOrientOffset = new Kata.Quaternion(Kata._helperQuatFromAxisAngle([
+                        newOffset.axis.x, newOffset.axis.y, newOffset.axis.z], newOffset.angle));
+
+                    // sync camera position
+                    this.syncCamera();
+                }
             }
+            else if (msg.event.button == 2)
+            {
+                var pixelsForUnitPanning = 50; // mouse sensitivity
 
-            // TODO: correct avatar mesh
-            // TODO: implement animations
+                // pan the camera
+                if (this.originalCamPosition !== undefined)
+                    this.cameraPosOffset = [
+                        this.originalCamPosition[0] + msg.dx / pixelsForUnitPanning,
+                        this.originalCamPosition[1] - msg.dy / pixelsForUnitPanning,
+                        this.originalCamPosition[2]
+                    ];
+            }
         }
         else if (msg.msg == "keyup")
         {
@@ -171,9 +194,10 @@ Kata.require([
                 this.presence.setVelocity([-avZX, -avZY, -avZZ]);
             }
 
-            if (this.keyIsDown[this.Keys.DOWN]||this.keyIsDown[this.Keys.S]) {
-                this.presence.setVelocity([avZX, avZY, avZZ]);
-            }
+            // TODO: implement reversed animation playback and then re-enable moving backwards.
+            //if (this.keyIsDown[this.Keys.DOWN]||this.keyIsDown[this.Keys.S]) {
+            //    this.presence.setVelocity([avZX, avZY, avZZ]);
+            //}
 
             if (this.keyIsDown[this.Keys.LEFT]||this.keyIsDown[this.Keys.A]) {
                 this.presence.setAngularVelocity(
@@ -198,24 +222,30 @@ Kata.require([
     }
 
     // Camera sync (modified code from BlessedScript.js)
-    FIContent.AvatarScript.prototype._getVerticalOffset = function(remote) {
-        return 2;
-    };
     FIContent.AvatarScript.prototype._getHorizontalOffset = function() {
-        return 5;
+        return this.cameraPosOffset[0];
+    };
+    FIContent.AvatarScript.prototype._getVerticalOffset = function(remote) {
+        return this.cameraPosOffset[1];
+    };
+    FIContent.AvatarScript.prototype._getDepthOffset = function(remote) {
+        return this.cameraPosOffset[2];
     };
     FIContent.AvatarScript.prototype._calcCamPos = function() {
         var orient = new Kata.Quaternion(this._calcCamOrient());
         var pos = this.presence.predictedPosition(new Date());
-        var offset = [0, this._getVerticalOffset(this.presence), this._getHorizontalOffset()];
+        var offset = [this._getHorizontalOffset(), this._getVerticalOffset(this.presence), this._getDepthOffset()];
         var oriented_offset = orient.multiply(offset);
         return [pos[0] + oriented_offset[0],
                 pos[1] + oriented_offset[1],
                 pos[2] + oriented_offset[2]];
     };
     FIContent.AvatarScript.prototype._calcCamOrient = function(){
-        return this.presence.predictedOrientation(new Date());
+        var orient = new Kata.Quaternion(this.presence.predictedOrientation(new Date()));
+        var offsetOrient = orient.multiply(this.cameraOrientOffset);
+        return [offsetOrient[0], offsetOrient[1], offsetOrient[2], offsetOrient[3]];
     };
+
     FIContent.AvatarScript.prototype.syncCamera = function() {
         var now = new Date();
         this.setCameraPosOrient(this._calcCamPos(), this._calcCamOrient());
