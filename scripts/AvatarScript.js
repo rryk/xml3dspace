@@ -99,6 +99,11 @@ Kata.require([
         // call to parent class
         Kata.GraphicsScript.prototype._handleGUIMessage.call(this,channel,msg);
 
+        var movementSpeed = 1; // units per second
+        var rotationSpeed = 0.07142; // full rotations per second
+        var groundLevel = 0.0;
+        var upAxis = 1; // y
+
         var msgType = msg.msg;
         if (msgType == "pick")
             this.lastPickMessage = msg;
@@ -114,13 +119,11 @@ Kata.require([
         }
         else if (msgType == "click")
         {
-            var groundLevel = 0.0;
-            var upAxis = 1; // y
-
-            if (FIContent.compareReal(this.lastPickMessage.pos[upAxis], groundLevel))
+            if (this.lastPickMessage.idHint != "nothing" &&
+                FIContent.compareReal(this.lastPickMessage.pos[upAxis], groundLevel))
             {
                 var newPos = this.lastPickMessage.pos;
-                this.move(newPos);
+                this.walkTo(newPos, movementSpeed, rotationSpeed);
             }
         }
 
@@ -169,27 +172,25 @@ Kata.require([
         {
             this.keyIsDown[msg.keyCode] = false;
 
-            if ( !this.keyIsDown[this.Keys.UP] && !this.keyIsDown[this.Keys.DOWN])
+            if (msg.keyCode == this.Keys.UP || msg.keyCode == this.Keys.DOWN)
                 this.presence.setVelocity([0, 0, 0]);
-            if ( !this.keyIsDown[this.Keys.LEFT] && !this.keyIsDown[this.Keys.RIGHT])
+            else if (msg.keyCode == this.Keys.LEFT || msg.keyCode == this.Keys.RIGHT)
                 this.presence.setAngularVelocity(Kata.Quaternion.identity());
         }
         else if (msg.msg == "keydown")
         {
             var avMat = Kata.QuaternionToRotation(this.presence.predictedOrientation(new Date()));
 
-            var avSpeed = 1;
-            var full_rot_seconds = 14.0;
-
-            var avXX = avMat[0][0] * avSpeed;
-            var avXY = avMat[0][1] * avSpeed;
-            var avXZ = avMat[0][2] * avSpeed;
-            var avZX = avMat[2][0] * avSpeed;
-            var avZY = avMat[2][1] * avSpeed;
-            var avZZ = avMat[2][2] * avSpeed;
+            var avXX = avMat[0][0] * movementSpeed;
+            var avXY = avMat[0][1] * movementSpeed;
+            var avXZ = avMat[0][2] * movementSpeed;
+            var avZX = avMat[2][0] * movementSpeed;
+            var avZY = avMat[2][1] * movementSpeed;
+            var avZZ = avMat[2][2] * movementSpeed;
             this.keyIsDown[msg.keyCode] = true;
 
             if (this.keyIsDown[this.Keys.UP]||this.keyIsDown[this.Keys.W]) {
+                this.stopAutomaticWalking();
                 var loc = this.presence.predictedLocationAtTime(new Date());
                 this.presence.setVelocity([-avZX, -avZY, -avZZ]);
             }
@@ -200,13 +201,15 @@ Kata.require([
             //}
 
             if (this.keyIsDown[this.Keys.LEFT]||this.keyIsDown[this.Keys.A]) {
+                this.stopAutomaticWalking();
                 this.presence.setAngularVelocity(
-                    Kata.Quaternion.fromAxisAngle([0, 1, 0], 2.0*Math.PI/full_rot_seconds)
+                    Kata.Quaternion.fromAxisAngle([0, 1, 0], 2.0 * Math.PI * rotationSpeed)
                 );
             }
             if (this.keyIsDown[this.Keys.RIGHT]||this.keyIsDown[this.Keys.D]) {
+                this.stopAutomaticWalking();
                 this.presence.setAngularVelocity(
-                    Kata.Quaternion.fromAxisAngle([0, 1, 0], -2.0*Math.PI/full_rot_seconds)
+                    Kata.Quaternion.fromAxisAngle([0, 1, 0], -2.0 * Math.PI * rotationSpeed)
                 );
             }
         }
@@ -214,11 +217,124 @@ Kata.require([
         this.updateGFX(this.presence);
     }
 
-    FIContent.AvatarScript.prototype.move = function(toPos) {
+    FIContent.AvatarScript.prototype.stopAutomaticWalking = function() {
+        // clear walking interval if any
+        if (this.automaticWalkingTimeout)
+        {
+            clearInterval(this.automaticWalkingTimeout);
+            this.presence.setVelocity([0, 0, 0]);
+            this.presence.setAngularVelocity(Kata.Quaternion.identity());
+
+            delete this.automaticWalkingTimeout;
+        }
+    }
+
+    FIContent.AvatarScript.prototype.walkTo = function(toPos, movementSpeed, rotationSpeed) {
         var locFrom = this.presence.predictedLocationAtTime(new Date());
 
-        // TODO: implement movement along bezier curve
-        console.log("walk from [" + locFrom.pos + "] to [" + toPos + "]");
+        // Stop any previous walking
+        this.stopAutomaticWalking();
+
+        // Movement path consists of segments, each of each should be recorded as an element in
+        // movementPath array and total number of segments should be stored in numPathSegments. Each
+        // record in movementPath should be a dictionary and contiain the following attributes:
+        //   startPos - starting position (array of 3 numbers representing a vector),
+        //   startOrient - starting orientation (array of 4 number representing a quaternion),
+        //   vel - velocity (array of 3 numbers representing a vector),
+        //   rotvel - rotational velocity (number representing radians per second),
+        //   rotaxis - axis of rotation (array of 3 numbers representing a vector),
+        //   dur - duration of the segment (number is seconds).
+        // The final position and orientation should be recorded in destination as following:
+        //   pos - final position (array of 3 numbers representing a vector),
+        //   orient - final orientation (array of 4 number representing a quaternion).
+
+        // Initialize a movement path.
+        var numPathSegments = 0;
+        var movementPath = [];
+        var destination = {};
+
+        // Configure movement path. We perform move in two stages - first we turn around to face the
+        // destination and then walk strait.
+
+        // Stage 1. Turn around.
+        // Compute rotation axis, angle and velocity.
+        var quat1 = new Kata.Quaternion(locFrom.orient);
+        var fromDir = quat1.multiply([0, 0, -1]);
+        var toDir = [toPos[0] - locFrom.pos[0],
+                     toPos[1] - locFrom.pos[1],
+                     toPos[2] - locFrom.pos[2]];
+        var rot = new XML3DRotation();
+        rot.setRotation(new XML3DVec3(fromDir[0], fromDir[1], fromDir[2]),
+                        new XML3DVec3(toDir[0], toDir[1], toDir[2]));
+        var rotVel = rotationSpeed * 2 * Math.PI;
+        numPathSegments = 2;
+        movementPath[0] = {
+            startPos: locFrom.pos,
+            startOrient: locFrom.orient,
+            vel: [0, 0, 0],
+            rotvel: rotVel,
+            rotaxis: [rot.axis.x, rot.axis.y, rot.axis.z],
+            dur: Math.abs(rot.angle / rotVel)
+        };
+
+        // Stage 2. Walk strait.
+        // Compute movement direction and distance.
+        var velocityVec = new XML3DVec3(toPos[0] - locFrom.pos[0], toPos[1] - locFrom.pos[1],
+            toPos[2] - locFrom.pos[2]).normalize().multiply(new XML3DVec3(movementSpeed,
+            movementSpeed, movementSpeed));
+        var distance = FIContent.distance(locFrom.pos, toPos);
+        var rotQuat = new Kata.Quaternion(Kata._helperQuatFromAxisAngle([rot.axis.x, rot.axis.y,
+            rot.axis.z], rot.angle));
+        var orient2 = new Kata.Quaternion(locFrom.orient).multiply(rotQuat);
+        movementPath[1] = {
+            startPos: locFrom.pos,
+            startOrient: [orient2[0], orient2[1], orient2[2], orient2[3]],
+            vel: [velocityVec.x, velocityVec.y, velocityVec.z],
+            rotvel: 0,
+            rotaxis: [0, 1, 0],
+            dur: distance / movementSpeed
+        };
+
+        // Prepare movement.
+        var that = this;
+        function executePathSegment(path, numSegments, segmentIndex, presence, destination)
+        {
+            // Check whether we are finished.
+            if (segmentIndex >= numSegments)
+            {
+                // Move to destination and stop movement.
+                var loc = presence.predictedLocationAtTime(new Date());
+                loc.pos = destination.pos;
+                loc.orient = destination.orient;
+                loc.vel = [0, 0, 0];
+                loc.rotvel = 0;
+                presence.setLocation(loc);
+                return;
+            }
+
+            var currentSegment = path[segmentIndex];
+
+            // Update location.
+            var loc = presence.predictedLocationAtTime(new Date());
+            loc.pos = currentSegment.startPos;
+            loc.orient = currentSegment.startOrient;
+            loc.vel = currentSegment.vel;
+            loc.rotvel = currentSegment.rotvel;
+            loc.rotaxis = currentSegment.rotaxis;
+            presence.setLocation(loc);
+
+            // Schedule next segment execution.
+            var nextSegmentIndex = segmentIndex + 1;
+            that.automaticWalkingTimeout = setTimeout(
+                function() {
+                    executePathSegment(path, numSegments, nextSegmentIndex, presence, destination)
+                },
+                currentSegment.dur * 1000
+            );
+        }
+
+        // Start movement.
+        executePathSegment(movementPath, numPathSegments, 0, this.presence, destination);
     }
 
     // Camera sync (modified code from BlessedScript.js)
@@ -249,7 +365,6 @@ Kata.require([
     FIContent.AvatarScript.prototype.syncCamera = function() {
         var now = new Date();
         this.setCameraPosOrient(this._calcCamPos(), this._calcCamOrient());
-
     };
 
 }, kata_base_offset + "scripts/AvatarScript.js");
