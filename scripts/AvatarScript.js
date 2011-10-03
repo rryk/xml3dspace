@@ -297,6 +297,10 @@ Kata.require([
             dur: distance / movementSpeed
         };
 
+        // Configure destination.
+        destination.pos = toPos;
+        destination.orient = [orient2[0], orient2[1], orient2[2], orient2[3]];
+
         // Prepare movement.
         var that = this;
         function executePathSegment(path, numSegments, segmentIndex, presence, destination)
