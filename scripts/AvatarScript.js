@@ -172,9 +172,11 @@ Kata.require([
         {
             this.keyIsDown[msg.keyCode] = false;
 
-            if (msg.keyCode == this.Keys.UP || msg.keyCode == this.Keys.DOWN)
+            if (msg.keyCode == this.Keys.UP || msg.keyCode == this.Keys.DOWN ||
+                msg.keyCode == this.Keys.W || msg.keyCode == this.Keys.S)
                 this.presence.setVelocity([0, 0, 0]);
-            else if (msg.keyCode == this.Keys.LEFT || msg.keyCode == this.Keys.RIGHT)
+            else if (msg.keyCode == this.Keys.LEFT || msg.keyCode == this.Keys.RIGHT ||
+                     msg.keyCode == this.Keys.A || msg.keyCode == this.Keys.D)
                 this.presence.setAngularVelocity(Kata.Quaternion.identity());
         }
         else if (msg.msg == "keydown")
