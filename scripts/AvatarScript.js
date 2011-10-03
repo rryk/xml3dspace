@@ -371,6 +371,11 @@ Kata.require([
     FIContent.AvatarScript.prototype.syncCamera = function() {
         var now = new Date();
         this.setCameraPosOrient(this._calcCamPos(), this._calcCamOrient());
+
+        // send info about location to all other avatars
+        // FIXME: This is a hack. Better is to find out why space server won't send mesh
+        //        URI when sending info about new objects and fix it.
+        this.presence.setLocation(this.presence.predictedLocationAtTime(new Date()));
     };
 
 }, kata_base_offset + "scripts/AvatarScript.js");
