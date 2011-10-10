@@ -119,8 +119,8 @@ Kata.require([
         }
         else if (msgType == "click")
         {
-            if (this.lastPickMessage.idHint != "nothing" &&
-                FIContent.compareReal(this.lastPickMessage.pos[upAxis], groundLevel))
+            if (this.lastPickMessage.idHint == "local-world-object" &&
+                this.lastPickMessage.target == "m_plyFloorShape_ifs")
             {
                 var newPos = this.lastPickMessage.pos;
                 this.walkTo(newPos, movementSpeed, rotationSpeed);
