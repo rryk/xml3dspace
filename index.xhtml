@@ -3,23 +3,23 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>FI-Content Demo</title>
+        <title>Visual Computer Journal Demo</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
         <!-- jQuery simplified Web/JavaScript development -->
-        <script type="text/javascript" src="externals/jquery/jquery-1.6.1.js"></script>
+        <script type="text/javascript" src="externals/jquery/jquery-1.7.1.js"></script>
 
         <!-- KataJS simplifies development of the Sirikata ObjectHost in the browser -->
         <script type="text/javascript" src="externals/katajs/katajs/core/Core.js"></script>
 
         <!-- configuration -->
         <script type="text/javascript"><![CDATA[
-            var spaceServer = "sirikata://" + window.location.host + ":7777/";
+            //var spaceServer = "sirikata://" + window.location.host + ":7777/";
             //var spaceServer = "sirikata://yellow.cg.uni-saarland.de:7777/";
             //var spaceServer = "sirikata://192.168.141.128:7777/";
-            //var spaceServer = "loop://localhost:7777/";
-            var avatarMesh = "cdn/prop/junkbot.xml3d";
-            var worldMesh = "cdn/prop/rockies.xml3d";
+            var spaceServer = "loop://localhost:7777/";
+            var avatarMesh = "cdn/box.xml3d";
+            var worldMesh = "cdn/empty.xml3d";
             var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
 
             // configure Web Workers
