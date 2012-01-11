@@ -369,7 +369,6 @@ Kata.require([
     };
 
     FIContent.AvatarScript.prototype.syncCamera = function() {
-        var now = new Date();
         this.setCameraPosOrient(this._calcCamPos(), this._calcCamOrient());
 
         // send info about location to all other avatars
