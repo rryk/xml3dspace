@@ -37,8 +37,8 @@ Kata.require([
     ['externals/protojs/protobuf.js', 'externals/protojs/pbj.js', kata_base_offset + 'scripts/behavior/animated/Animated.pbj.js']
 ], function() {
 
-    if (typeof(FIContent.Behavior) == "undefined")
-        FIContent.Behavior = {};
+    if (typeof(VisComp.Behavior) == "undefined")
+        VisComp.Behavior = {};
 
     /** Animated maintains animation states.  Currently it just
      *  tracks and idle and a moving state.
@@ -51,7 +51,7 @@ Kata.require([
      *  Second parameter is a map of state animations, e.g.
      *  { idle : 'sit', forward : 'walk' }.
      */
-    FIContent.Behavior.Animated = function(parent, init_state, update_cb) {
+    VisComp.Behavior.Animated = function(parent, init_state, update_cb) {
         this.mParent = parent;
         this.mParent.addBehavior(this);
 
@@ -64,20 +64,20 @@ Kata.require([
         this.mLastState = init_state;
     };
 
-    FIContent.Behavior.Animated.prototype.ProtocolPort = 12;
+    VisComp.Behavior.Animated.prototype.ProtocolPort = 12;
 
-    FIContent.Behavior.Animated.prototype.setState = function(state) {
+    VisComp.Behavior.Animated.prototype.setState = function(state) {
         this.mLastState = state;
         this._sendUpdate(state);
     };
 
-    FIContent.Behavior.Animated.prototype._serializeMessage = function(msg) {
+    VisComp.Behavior.Animated.prototype._serializeMessage = function(msg) {
         var serialized = new PROTO.ByteArrayStream();
         msg.SerializeToStream(serialized);
         return serialized.getArray();
     };
 
-    FIContent.Behavior.Animated.prototype._getPort = function(pres) {
+    VisComp.Behavior.Animated.prototype._getPort = function(pres) {
         var id = pres;
         if (pres.presenceID)
             id = pres.presenceID();
@@ -90,7 +90,7 @@ Kata.require([
         return odp_port;
     };
 
-    FIContent.Behavior.Animated.prototype._handleEnter = function(presence, remoteID) {
+    VisComp.Behavior.Animated.prototype._handleEnter = function(presence, remoteID) {
         if (this.mTrackedObjects[remoteID]) {
             Kata.warn("Overwriting existing animated info due to duplicate intro.");
         }
@@ -102,27 +102,27 @@ Kata.require([
         this._sendUpdate(this.mLastState);
     };
 
-    FIContent.Behavior.Animated.prototype._handleSetStateMessage = function(remoteID, msg) {
+    VisComp.Behavior.Animated.prototype._handleSetStateMessage = function(remoteID, msg) {
         if (this.mTrackedObjects[remoteID]) {
             var objdata = this.mTrackedObjects[remoteID];
             this.mUpdateCallback( this.mParent.getRemotePresence(remoteID), msg);
         }
     };
 
-    FIContent.Behavior.Animated.prototype._handleExit = function(remoteID, msg) {
+    VisComp.Behavior.Animated.prototype._handleExit = function(remoteID, msg) {
         if (this.mTrackedObjects[remoteID]) {
             var objdata = this.mTrackedObjects[remoteID];
             delete this.mTrackedObjects[remoteID];
         }
     };
 
-    FIContent.Behavior.Animated.prototype.newPresence = function(pres) {
+    VisComp.Behavior.Animated.prototype.newPresence = function(pres) {
         // When we get a presence, we just set up a listener for
         // messages. The rest is triggered by prox events.
         var odp_port = this._getPort(pres);
     };
 
-    FIContent.Behavior.Animated.prototype.presenceInvalidated = function(pres) {
+    VisComp.Behavior.Animated.prototype.presenceInvalidated = function(pres) {
         var odp_port = this._getPort(pres);
         if (odp_port) {
             odp_port.close();
@@ -130,7 +130,7 @@ Kata.require([
         }
     };
 
-    FIContent.Behavior.Animated.prototype.remotePresence = function(presence, remote, added) {
+    VisComp.Behavior.Animated.prototype.remotePresence = function(presence, remote, added) {
         if (added) {
             // This protocol is active: when we detect another presence,
             // we try to send it an intro message. This message subscribes us for updates.
@@ -148,7 +148,7 @@ Kata.require([
         }
     };
 
-    FIContent.Behavior.Animated.prototype._sendUpdate = function(state) {
+    VisComp.Behavior.Animated.prototype._sendUpdate = function(state) {
         // Simply iterate over everyone we know about and try to get the message to them.
         for(var remote_key in this.mTrackedObjects) {
             var animate_msg = new Animated.Protocol.SetState();
@@ -163,7 +163,7 @@ Kata.require([
         }
     };
 
-    FIContent.Behavior.Animated.prototype._handleMessage = function(presence, src, dest, payload) {
+    VisComp.Behavior.Animated.prototype._handleMessage = function(presence, src, dest, payload) {
         // We should be able to just parse a Animated Container
         var container_msg = new Animated.Protocol.Container();
         container_msg.ParseFromStream(new PROTO.ByteArrayStream(payload));

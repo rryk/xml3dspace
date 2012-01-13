@@ -1,4 +1,4 @@
-if (typeof(FIContent) === "undefined") FIContent = {};
+if (typeof(VisComp) === "undefined") VisComp = {};
 
 Kata.require([
     'katajs/oh/GraphicsScript.js',
@@ -7,7 +7,7 @@ Kata.require([
 ], function() {
 
     var SUPER = Kata.GraphicsScript.prototype;
-    FIContent.AvatarScript = function(channel, args) {
+    VisComp.AvatarScript = function(channel, args) {
         // initialize avatar in the origin
         this.initialLocation = args.loc;
 
@@ -26,7 +26,7 @@ Kata.require([
 
         // add animated behavior
         this.mAnimatedBehavior =
-            new FIContent.Behavior.Animated(
+            new VisComp.Behavior.Animated(
                 this,
                 {
                     idle: 'idle',
@@ -35,15 +35,15 @@ Kata.require([
                 Kata.bind(this.animatedSetState, this)
             );
     };
-    Kata.extend(FIContent.AvatarScript, SUPER);
+    Kata.extend(VisComp.AvatarScript, SUPER);
 
     // update animated state for remote object
-    FIContent.AvatarScript.prototype.animatedSetState = function(remote, state) {
+    VisComp.AvatarScript.prototype.animatedSetState = function(remote, state) {
         remote._animatedState = state;
         this.updateGFX(remote);
     };
 
-    FIContent.AvatarScript.prototype.updateAnimation = function(presence, remote){
+    VisComp.AvatarScript.prototype.updateAnimation = function(presence, remote){
         var vel = remote.predictedVelocity();
         var angspeed = remote.predictedAngularSpeed();
         var is_mobile = (vel[0] != 0 || vel[1] != 0 || vel[2] != 0 || angspeed != 0);
@@ -58,7 +58,7 @@ Kata.require([
     };
 
     // callback which is triggered when object is connected to the space
-    FIContent.AvatarScript.prototype.connected = function(presence, space, reason) {
+    VisComp.AvatarScript.prototype.connected = function(presence, space, reason) {
         // handle connection failure
         if (presence == null) {
             Kata.error('Failed to connect avatar to ' + space + '. Reason: ' + reason);
@@ -83,7 +83,7 @@ Kata.require([
         this._sendHostedObjectMessage(gfxmsg);
     }
 
-    FIContent.AvatarScript.prototype.Keys = {
+    VisComp.AvatarScript.prototype.Keys = {
         UP : 38,
         DOWN : 40,
         LEFT : 37,
@@ -95,7 +95,7 @@ Kata.require([
     };
 
     // Handle incoming GUI messages
-    FIContent.AvatarScript.prototype._handleGUIMessage = function(channel, msg) {
+    VisComp.AvatarScript.prototype._handleGUIMessage = function(channel, msg) {
         // call to parent class
         Kata.GraphicsScript.prototype._handleGUIMessage.call(this,channel,msg);
 
@@ -219,7 +219,7 @@ Kata.require([
         this.updateGFX(this.presence);
     }
 
-    FIContent.AvatarScript.prototype.stopAutomaticWalking = function() {
+    VisComp.AvatarScript.prototype.stopAutomaticWalking = function() {
         // clear walking interval if any
         if (this.automaticWalkingTimeout)
         {
@@ -231,7 +231,7 @@ Kata.require([
         }
     }
 
-    FIContent.AvatarScript.prototype.walkTo = function(toPos, movementSpeed, rotationSpeed) {
+    VisComp.AvatarScript.prototype.walkTo = function(toPos, movementSpeed, rotationSpeed) {
         var locFrom = this.presence.predictedLocationAtTime(new Date());
 
         // Stop any previous walking
@@ -284,7 +284,7 @@ Kata.require([
         var velocityVec = new XML3DVec3(toPos[0] - locFrom.pos[0], toPos[1] - locFrom.pos[1],
             toPos[2] - locFrom.pos[2]).normalize().multiply(new XML3DVec3(movementSpeed,
             movementSpeed, movementSpeed));
-        var distance = FIContent.distance(locFrom.pos, toPos);
+        var distance = VisComp.distance(locFrom.pos, toPos);
         var rotQuat = new Kata.Quaternion(Kata._helperQuatFromAxisAngle([rot.axis.x, rot.axis.y,
             rot.axis.z], rot.angle));
         var orient2 = new Kata.Quaternion(locFrom.orient).multiply(rotQuat);
@@ -344,16 +344,16 @@ Kata.require([
     }
 
     // Camera sync (modified code from BlessedScript.js)
-    FIContent.AvatarScript.prototype._getHorizontalOffset = function() {
+    VisComp.AvatarScript.prototype._getHorizontalOffset = function() {
         return this.cameraPosOffset[0];
     };
-    FIContent.AvatarScript.prototype._getVerticalOffset = function(remote) {
+    VisComp.AvatarScript.prototype._getVerticalOffset = function(remote) {
         return this.cameraPosOffset[1];
     };
-    FIContent.AvatarScript.prototype._getDepthOffset = function(remote) {
+    VisComp.AvatarScript.prototype._getDepthOffset = function(remote) {
         return this.cameraPosOffset[2];
     };
-    FIContent.AvatarScript.prototype._calcCamPos = function() {
+    VisComp.AvatarScript.prototype._calcCamPos = function() {
         var orient = new Kata.Quaternion(this._calcCamOrient());
         var pos = this.presence.predictedPosition(new Date());
         var offset = [this._getHorizontalOffset(), this._getVerticalOffset(this.presence), this._getDepthOffset()];
@@ -362,13 +362,13 @@ Kata.require([
                 pos[1] + oriented_offset[1],
                 pos[2] + oriented_offset[2]];
     };
-    FIContent.AvatarScript.prototype._calcCamOrient = function(){
+    VisComp.AvatarScript.prototype._calcCamOrient = function(){
         var orient = new Kata.Quaternion(this.presence.predictedOrientation(new Date()));
         var offsetOrient = orient.multiply(this.cameraOrientOffset);
         return [offsetOrient[0], offsetOrient[1], offsetOrient[2], offsetOrient[3]];
     };
 
-    FIContent.AvatarScript.prototype.syncCamera = function() {
+    VisComp.AvatarScript.prototype.syncCamera = function() {
         this.setCameraPosOrient(this._calcCamPos(), this._calcCamOrient());
 
         // send info about location to all other avatars

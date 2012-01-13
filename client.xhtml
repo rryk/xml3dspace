@@ -3,29 +3,17 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>Visual Computer Journal Demo</title>
+        <title>Visual Computer Journal Demo: Client</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-        <!-- jQuery simplified Web/JavaScript development -->
+        <!-- jQuery simplifies Web/JavaScript development -->
         <script type="text/javascript" src="externals/jquery/jquery-1.7.1.js"></script>
 
         <!-- KataJS simplifies development of the Sirikata ObjectHost in the browser -->
         <script type="text/javascript" src="externals/katajs/katajs/core/Core.js"></script>
 
         <!-- configuration -->
-        <script type="text/javascript"><![CDATA[
-            //var spaceServer = "sirikata://" + window.location.host + ":7777/";
-            //var spaceServer = "sirikata://yellow.cg.uni-saarland.de:7777/";
-            //var spaceServer = "sirikata://192.168.141.128:7777/";
-            var spaceServer = "loop://localhost:7777/";
-            var avatarMesh = "cdn/box.xml3d";
-            var worldMesh = "cdn/simpleWorld.xml3d";
-            var kata_base_offset = "../../"; // offset from the externals/katajs/ back to the root dir
-
-            // configure Web Workers
-            Kata.WEB_WORKERS_ENABLED = false;
-            //Kata.bootstrapWorker = window.location.href + "/boostrapWorker.js";
-        ]]></script>
+        <script type="text/javascript" src="config.js" />
 
         <!-- main script -->
         <script type="text/javascript"><![CDATA[
@@ -36,18 +24,19 @@
                     'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // to use sirikata://.../ protocol
                     'katajs/oh/plugins/loop/LoopbackSpaceConnection.js', // to use loop://.../ protocol
                 ], function() {
-                    Kata.GraphicsSimulation.initializeDriver("XML3D", worldMesh, function() {
+                    Kata.GraphicsSimulation.initializeDriver("XML3D", emptyMesh, function() {
                         kata = new Kata.MainThread(
                             kata_base_offset + "scripts/AvatarScript.js",
-                            "FIContent.AvatarScript",
+                            "VisComp.AvatarScript",
                             {
                                 space: spaceServer,
                                 loc: {
                                     scale: [0, 0, 0, 1],
-                                    pos: [0, 0, 0]
+                                    pos: [20, 200.1, 2000],
+                                    orient: [0, 0, 0, 1]
                                 },
                                 visual: {
-                                    mesh: avatarMesh
+                                    mesh: "cdn/prop/junkbot.xml3d"
                                 }
                             }
                         );
@@ -55,6 +44,12 @@
                     });
                 });
             });
+            
+            // dummy functions to decrease errors reported to the console
+            function setRequest() {}
+            function getInfos() {}
+            function ShowContent() {}
+            function HideContent() {}
         ]]></script>
 
         <!-- Load style for the viewer interface -->

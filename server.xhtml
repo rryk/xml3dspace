@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Visual Computer Journal Demo: Tile Server</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+        <!-- jQuery simplifies Web/JavaScript development -->
+        <script type="text/javascript" src="externals/jquery/jquery-1.7.1.js"></script>
+
+        <!-- KataJS simplifies development of the Sirikata ObjectHost in the browser -->
+        <script type="text/javascript" src="externals/katajs/katajs/core/Core.js"></script>
+
+        <!-- configuration -->
+        <script type="text/javascript" src="config.js" />
+
+        <!-- main script -->
+        <script type="text/javascript"><![CDATA[
+            $(window).load(function() {
+                Kata.require([
+                    'katajs/oh/MainThread.js', // to create MainThread object
+                    'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // to use sirikata://.../ protocol
+                    'katajs/oh/plugins/loop/LoopbackSpaceConnection.js', // to use loop://.../ protocol
+                ], function() {
+                    kata = new Kata.MainThread(
+                        kata_base_offset + "scripts/TileManagerScript.js",
+                            "VisComp.TileManagerScript",
+                            {
+                                space: spaceServer,
+                                visual: {mesh: emptyMesh},
+                                logContainer: "log",
+                                mapServer: "http://localhost/devenv3/citygml-xml3d/XML3D_Mapserver/httpdocs/query.php",
+                                area: {minx: 4254, maxx: 4257, miny: 2804, maxy: 2807},
+                                //area: {minx: 4254, maxx: 4254, miny: 2804, maxy: 2804},
+                                zoom: 13,
+                                aggregateLayers: true,
+                            }
+                        );
+                });
+            });
+        ]]></script>
+    </head>
+    <body>
+        <pre id="log" />
+    </body>
+</html>
