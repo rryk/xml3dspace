@@ -1,4 +1,4 @@
-/*  XML3DSpace
+/*  XML3DSpace Utilities
  *  Tile.pbj
  *
  *  Copyright (c) 2012, Sergiy Byelozyorov
@@ -34,11 +34,10 @@
 
 package Tile.Protocol;
 
-// This intro message is only necessary when using ODP directly
-message TileDetailsRequest {
+message Intro {
 }
 
-message TileDetailsResponse {
+message Info {
     required double x = 1;
     required double y = 2;
     required double z = 3;
@@ -46,6 +45,6 @@ message TileDetailsResponse {
 }
 
 message Container {
-    optional TileDetailsRequest request = 1;
-    optional TileDetailsResponse response = 2;
+    optional Intro intro = 1;
+    optional Info info = 2;
 }

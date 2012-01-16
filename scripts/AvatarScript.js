@@ -3,6 +3,7 @@ if (typeof(VisComp) === "undefined") VisComp = {};
 Kata.require([
     'katajs/oh/GraphicsScript.js',
     kata_base_offset + "scripts/Tools.js",
+    kata_base_offset + "scripts/behavior/tile/Tile.js",
 ], function() {
 
     var SUPER = Kata.GraphicsScript.prototype;
@@ -11,7 +12,7 @@ Kata.require([
         this.initialLocation = args.loc;
 
         // call parent constructor
-        SUPER.constructor.call(this, channel, args, Kata.bind(this.updateAnimation, this));
+        SUPER.constructor.call(this, channel, args);
 
         // connect to the space server
         this.connect(args, null, Kata.bind(this.connected, this));
@@ -26,28 +27,10 @@ Kata.require([
         // initial speeds
         this.speed = 1;
         this.angularSpeed = 0.07142;
+
+        this.tileBehavior = new VisComp.Behavior.Tile(this, args.mapClientHint);
     };
     Kata.extend(VisComp.AvatarScript, SUPER);
-
-    // update animated state for remote object
-    VisComp.AvatarScript.prototype.animatedSetState = function(remote, state) {
-        remote._animatedState = state;
-        this.updateGFX(remote);
-    };
-
-    VisComp.AvatarScript.prototype.updateAnimation = function(presence, remote){
-        var vel = remote.predictedVelocity();
-        var angspeed = remote.predictedAngularSpeed();
-        var is_mobile = (vel[0] != 0 || vel[1] != 0 || vel[2] != 0 || angspeed != 0);
-
-        var cur_anim = remote.cur_anim;
-        var new_anim = (is_mobile ? "walk" : "idle");
-
-        if (cur_anim != new_anim) {
-            this.animate(presence, remote, new_anim);
-            remote.cur_anim = new_anim;
-        }
-    };
 
     // callback which is triggered when object is connected to the space
     VisComp.AvatarScript.prototype.connected = function(presence, space, reason) {

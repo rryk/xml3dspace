@@ -1,7 +1,8 @@
 if (typeof(VisComp) === "undefined") VisComp = {};
 
 Kata.require([
-    'katajs/oh/Script.js'
+    'katajs/oh/Script.js',
+    kata_base_offset + "scripts/behavior/tile/Tile.js",
 ], function() {
 
     var SUPER = Kata.Script.prototype;
@@ -13,7 +14,8 @@ Kata.require([
         this.connect(args, null, Kata.bind(this.connected, this));
 
         this.logContainerId = args.logContainerId;
-        this.mesh = args.visual.mesh;
+
+        this.tileBehavior = new VisComp.Behavior.Tile(this, args.mapClientHint);
     };
     Kata.extend(VisComp.TileScript, SUPER);
 
