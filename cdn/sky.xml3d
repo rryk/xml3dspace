@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xml3d xmlns="http://www.xml3d.org/2009/xml3d">
+    <defs>
+        <transform id="szene" rotation="0 1 0 0" scale="1 1 1" translation="2571188 5454452 0.0" />
+        <transform id="transform_focus" scale="1 1 1" translation="2000 -1000 100" />
+
+        <transform id="berlin" rotation="0 0 0 0" scale="1 1 1" translation="-19555 -21195 0" />
+        <transform id="munich" rotation="0 0 0 0" scale="1 1 1" translation="-689778.337 -5336048.104 -522" />
+
+        <transform id="t_Lamp" rotation="0 0 1 0.0" scale="1 1 1" translation="4000 4000 4000"/>
+        <transform id="t_Lamp1" rotation="0 0 1 0.0" scale="1 1 1" translation="-4000 4000 4000"/>
+        <transform id="t_Lamp2" rotation="0 0 1 0.0" scale="1 1 1" translation="4000 -4000 4000"/>
+        <transform id="t_Lamp3" rotation="0 0 1 0.0" scale="1 1 1" translation="-4000 -4000 4000"/>
+        <transform id="licht" rotation="0 1 0 0" scale="1 1 1" translation="0 0 0" />
+
+        <lightshader id="lamp" script="urn:xml3d:lightshader:point">
+            <bool name="castShadow">
+                true
+            </bool>
+            <float3 name="attenuation">
+                0.00000001 0.00000001 0.00000001
+            </float3>
+            <float3 name="intensity">
+                0.3 0.3 0.3
+            </float3>
+        </lightshader>
+
+        <!-- Groundplane -->
+        <shader id="gr" script="urn:xml3d:shader:phong">
+            <float3 name="emissiveColor">0 0 0</float3>
+            <float3 name="diffuseColor">0.2627450980392157 0.43137254901960786 0.2784313725490196</float3>
+            <bool name="useVertexColor">false</bool>
+            <float3 name="reflective">0 0 0</float3>
+            <float3 name="specularColor">0 0 0</float3>
+            <float name="ambientIntensity">0</float>
+            <float name="shininess">1</float>
+        </shader>
+
+        <shader id="focus" script="urn:xml3d:shader:phong">
+            <float name="ambientIntensity">0.60</float>
+            <float3 name="diffuseColor">1 0 0</float3>
+            <float3 name="specularColor">0.0 0.0 0.0</float3>
+            <float3 name="emissiveColor">0 0 0</float3>
+            <float name="shininess">1.0000</float>
+        </shader>			
+
+        <!-- Skysphere -->
+        <data id="globalTessellation"> 
+            <int name="segments" id="numSegments">20</int> 
+        </data>
+        <script id="sphere" >Sphere</script>
+        <transform id="transformSky" translation="0 0 0" scale="20000 20000 20000" />
+        <shader id="shaderSkysphere" script="urn:xml3d:shader:phong"> 
+            <float name="transparency">0.0</float> 
+            <float3 name="emissiveColor">0 0 0</float3> 
+            <float3 name="specularColor">0.25 0.25 0.25</float3> 
+            <float name="shininess">0</float> 
+            <float name="ambientIntensity">0.8</float> 
+            <float3 name="diffuseColor">1 1 1</float3> 
+            <texture name="diffuseTexture"> 
+                <img src="graphics/sky3.jpg" /> 
+            </texture>
+        </shader>
+        <data id="Skysphere" script="#sphere"> 
+            <data src="#globalTessellation"/> 
+        </data>
+    </defs>
+
+    <group id="gr_szene" >
+        <group id="ground" shader="#gr">
+            <mesh>
+                <int name="index">0 1 2  2 1 3</int>
+                <float3 name="position">-6000.0 -6000.0 -10  6000.0 -6000.0 -10  -6000.0 6000.0 -10  6000.0 6000.0 -10</float3>
+                <float3 name="normal">0.0 0.0 1  0.0 0.0 1  0.0 0.0 1  0.0 0.0 1</float3>
+            </mesh>
+        </group>
+        <group transform="#licht">
+            <group transform="#t_Lamp">
+                <light id="Licht_" shader="#lamp" visible="true" />
+            </group>
+        </group>
+        <group transform="#licht">
+            <group transform="#t_Lamp1">
+                <light id="Licht_" shader="#lamp" visible="true" />
+            </group>
+        </group>
+        <group transform="#licht">
+            <group transform="#t_Lamp2">
+                <light id="Licht_" shader="#lamp" visible="true" />
+            </group>
+        </group>
+        <group transform="#licht">
+            <group transform="#t_Lamp3">
+                <light id="Licht_" shader="#lamp" visible="true" />
+            </group>
+        </group>				
+    </group>
+</xml3d>

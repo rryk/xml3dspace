@@ -1,0 +1,13 @@
+body {
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+}
+
+#view {
+    width: 100%;
+    height: 99.4%;
+}
+
+#view xml3d {
+    background-color: #bff;
+}

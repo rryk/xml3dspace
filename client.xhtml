@@ -32,11 +32,12 @@
                                 space: spaceServer,
                                 loc: {
                                     scale: [0, 0, 0, 1],
-                                    pos: [20, 200.1, 2000],
-                                    orient: [0, 0, 0, 1]
+                                    //pos: [20, 200.1, 2000],
+                                    pos: [1394.2814845245375, 1057.8625582707273, 0.09957743131091168],
+                                    orient: [0.7050493008568176, 0.05011303702861959, 0.05007314655527848, 0.705610974174251],
                                 },
                                 visual: {
-                                    mesh: "cdn/prop/junkbot.xml3d"
+                                    mesh: "cdn/prop/amber.xml3d"
                                 }
                             }
                         );
@@ -46,15 +47,16 @@
             });
             
             // dummy functions to decrease errors reported to the console
-            function setRequest() {}
-            function getInfos() {}
-            function ShowContent() {}
-            function HideContent() {}
+            function handleOnMouseOver() {}
+            function handleOnMouseOut() {}
+            function handleOnClick() {}
+            function handleOnDblClick() {}
+            function handleOnMouseMove() {}
         ]]></script>
 
         <!-- Load style for the viewer interface -->
         <link type="text/css" href="style/style-common.css" rel="stylesheet" media="all" />
-        <link type="text/css" href="style/style-viewer.css" rel="stylesheet" media="all" />
+        <link type="text/css" href="style/style-client.css" rel="stylesheet" media="all" />
     </head>
     <body>
         <div id="view" />

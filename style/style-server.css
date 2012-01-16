@@ -1,0 +1,41 @@
+#log {
+    width: 80%; 
+    font-family: monospace;
+}
+
+#controls {
+    float: right;
+    width: 20%;
+    text-align: center;
+    background-color: #eee;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#controls button {
+    width: 90%;
+}
+
+#controls .layer {
+    margin-left: 5%;
+    margin-bottom: 2px;
+    width: 90%;
+    text-align: left;
+}
+
+#controls div.tilearea {
+    text-align: center;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#controls div.tilearea div {
+    display: inline-block;
+    width: 160px;
+    text-align: right;
+}
+
+#controls div.tilearea div input {
+    width: 100px;
+    text-align: center;
+}

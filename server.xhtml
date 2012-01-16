@@ -28,20 +28,44 @@
                             "VisComp.TileManagerScript",
                             {
                                 space: spaceServer,
-                                visual: {mesh: emptyMesh},
-                                logContainer: "log",
-                                mapServer: "http://localhost/devenv3/citygml-xml3d/XML3D_Mapserver/httpdocs/query.php",
-                                area: {minx: 4254, maxx: 4257, miny: 2804, maxy: 2807},
-                                //area: {minx: 4254, maxx: 4254, miny: 2804, maxy: 2804},
-                                zoom: 13,
+                                logContainerId: "log",
+                                controlsContainerId: "controls",
+                                mapServer: "http://localhost/devenv3/citygml-xml3d/xml3d-gis_current/httpdocs/sirikataconnect.php",
+                                //area: {minx: 17020, maxx: 17021, miny: 11220, maxy: 11221},
+                                //area: {minx: 17021, maxx: 17021, miny: 11221, maxy: 11221},
+                                defaultArea: {minX: 17020, maxX: 17020, minY: 11220, maxY: 11220},
+                                defaultZoom: 15,
                                 aggregateLayers: true,
                             }
                         );
                 });
             });
         ]]></script>
+        
+        <!-- Load style for the viewer interface -->
+        <link type="text/css" href="style/style-common.css" rel="stylesheet" media="all" />
+        <link type="text/css" href="style/style-server.css" rel="stylesheet" media="all" />
     </head>
     <body>
-        <pre id="log" />
+        <div id="controls">
+            <hr width="90%"/>
+            <div class="tilearea">
+                <div>
+                    min X: <input type="text" id="controls_minX" disabled="disabled" />
+                </div>
+                <div>
+                    max X: <input type="text" id="controls_maxX" disabled="disabled" />
+                </div>
+                <div>
+                    min Y: <input type="text" id="controls_minY" disabled="disabled" />
+                </div>
+                <div>
+                    max Y: <input type="text" id="controls_maxY" disabled="disabled" />
+                </div>
+            </div>
+            <hr width="90%"/>
+            <button id="controls_create" disabled="disabled">Create tile objects</button>
+        </div>
+        <div id="log" />
     </body>
 </html>

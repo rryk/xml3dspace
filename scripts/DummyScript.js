@@ -12,21 +12,24 @@ Kata.require([
         // connect to the space server
         this.connect(args, null, Kata.bind(this.connected, this));
         
-        this.logContainer = args.logContainer;
+        this.logContainerId = args.logContainerId;
         this.mesh = args.visual.mesh;
     };
     Kata.extend(VisComp.DummyScript, SUPER);
     
     // callback which is triggered when object is connected to the space
     VisComp.DummyScript.prototype.connected = function(presence, space, reason) {
-        this.log("Object connected: " + this.mesh);
+        this.log("Object " + presence.id() + " connected");
     }
     
     VisComp.DummyScript.prototype.log = function(message) {
-        document.getElementById(this.logContainer).appendChild(
+        document.getElementById(this.logContainerId).appendChild(
             document.createTextNode(
-                new Date().toLocaleTimeString() + " " + message + "\n"
+                new Date().toLocaleTimeString() + " " + message
             )
+        );
+        document.getElementById(this.logContainerId).appendChild(
+            document.createElement("br")
         );
     }
     

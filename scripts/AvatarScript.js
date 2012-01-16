@@ -24,6 +24,10 @@ Kata.require([
         this.cameraOrientOffset = Kata.Quaternion.identity();
         this.cameraPosOffset = [0, 2, 5];
 
+        // initial speeds
+        this.speed = 1;
+        this.angularSpeed = 0.07142;
+
         // add animated behavior
         this.mAnimatedBehavior =
             new VisComp.Behavior.Animated(
@@ -81,6 +85,25 @@ Kata.require([
         // enable picking messages
         var gfxmsg = new Kata.ScriptProtocol.FromScript.GFXEnableEvent(null, "pick");
         this._sendHostedObjectMessage(gfxmsg);
+
+        setPos = function(x, y, z) {
+            presence.setPosition([x, y, z]);
+        }
+
+        getPos = function() {
+            return presence.predictedPosition(new Date());
+        }
+
+        var thus = this;
+        setSpeed = function(sp) {
+            thus.speed = sp;
+        }
+
+        setAngSpeed = function(asp) {
+            thus.angularSpeed = asp;
+        }
+
+        document.getElementsByTagName("xml3d")[0].addEventListener("click", function(e){console.log(e.position.toString())});
     }
 
     VisComp.AvatarScript.prototype.Keys = {
@@ -99,8 +122,8 @@ Kata.require([
         // call to parent class
         Kata.GraphicsScript.prototype._handleGUIMessage.call(this,channel,msg);
 
-        var movementSpeed = 1; // units per second
-        var rotationSpeed = 0.07142; // full rotations per second
+        var movementSpeed = this.speed; // units per second
+        var rotationSpeed = this.angularSpeed; // full rotations per second
         var groundLevel = 0.0;
         var upAxis = 1; // y
 
