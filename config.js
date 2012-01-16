@@ -1,8 +1,8 @@
 // space server
 //var spaceServer = "sirikata://" + window.location.host + ":7777/";
 //var spaceServer = "sirikata://yellow.cg.uni-saarland.de:7777/";
-//var spaceServer = "sirikata://192.168.141.132:7777/";
-var spaceServer = "loop://localhost:7777/";
+var spaceServer = "sirikata://192.168.141.132:7777/";
+//var spaceServer = "loop://localhost:7777/";
 
 // meshes
 var boxMesh = "cdn/box.xml3d";

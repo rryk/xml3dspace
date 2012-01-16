@@ -29,39 +29,61 @@
                             {
                                 space: spaceServer,
                                 logContainerId: "log",
-                                controlsContainerId: "controls",
                                 mapServer: "http://localhost/devenv3/citygml-xml3d/xml3d-gis_current/httpdocs/sirikataconnect.php",
                                 //area: {minx: 17020, maxx: 17021, miny: 11220, maxy: 11221},
                                 //area: {minx: 17021, maxx: 17021, miny: 11221, maxy: 11221},
-                                defaultArea: {minX: 17020, maxX: 17020, minY: 11220, maxY: 11220},
-                                defaultZoom: 15,
-                                aggregateLayers: true,
+                                controls: {
+                                    layers: "controls_layers",
+                                    area: {
+                                        minX: "controls_minX",
+                                        maxX: "controls_maxX",
+                                        minY: "controls_minY",
+                                        maxY: "controls_maxY"
+                                    },
+                                    zoom: "controls_zoom",
+                                    aggregate: "controls_aggregate",
+                                    create: "controls_create"
+                                },
                             }
                         );
                 });
             });
         ]]></script>
-        
+
         <!-- Load style for the viewer interface -->
         <link type="text/css" href="style/style-common.css" rel="stylesheet" media="all" />
         <link type="text/css" href="style/style-server.css" rel="stylesheet" media="all" />
     </head>
     <body>
         <div id="controls">
+            <div id="controls_layers" />
             <hr width="90%"/>
-            <div class="tilearea">
-                <div>
-                    min X: <input type="text" id="controls_minX" disabled="disabled" />
-                </div>
-                <div>
-                    max X: <input type="text" id="controls_maxX" disabled="disabled" />
-                </div>
-                <div>
-                    min Y: <input type="text" id="controls_minY" disabled="disabled" />
-                </div>
-                <div>
-                    max Y: <input type="text" id="controls_maxY" disabled="disabled" />
-                </div>
+            <table class="tilearea">
+                <tr>
+                    <td class="tilearea_label"><label for="controls_minX">min X: </label></td>
+                    <td><input type="text" id="controls_minX" disabled="disabled" value="17020" /></td>
+                </tr>
+                <tr>
+                    <td class="tilearea_label"><label for="controls_maxX">max X: </label></td>
+                    <td><input type="text" id="controls_maxX" disabled="disabled" value="17020" /></td>
+                </tr>
+                <tr>
+                    <td class="tilearea_label"><label for="controls_minY">min Y: </label></td>
+                    <td><input type="text" id="controls_minY" disabled="disabled" value="11220" /></td>
+                </tr>
+                <tr>
+                    <td class="tilearea_label"><label for="controls_maxY">max Y: </label></td>
+                    <td><input type="text" id="controls_maxY" disabled="disabled" value="11220" /></td>
+                </tr>
+                <tr>
+                    <td class="tilearea_label"><label for="controls_zoom">zoom: </label></td>
+                    <td><input type="text" id="controls_zoom" disabled="disabled" value="15" /></td>
+                </tr>
+            </table>
+            <hr width="90%" />
+            <div class="aggregate">
+                <input type="checkbox" id="controls_aggregate" disabled="disabled" checked="checked" />
+                <label for="controls_aggregate">aggregate layers into one object</label>
             </div>
             <hr width="90%"/>
             <button id="controls_create" disabled="disabled">Create tile objects</button>

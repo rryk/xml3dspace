@@ -20,14 +20,11 @@ Kata.require([
 
         // save arguments
         this.logContainerId = args.logContainerId;
-        this.controlsContainerId = args.controlsContainerId;
+        this.controls = args.controls;
         this.mapServer = args.mapServer;
-        this.defaultArea = args.defaultArea;
-        this.defaultZoom = args.defaultZoom;
-        this.aggregateLayers = args.aggregateLayers;
         this.space = args.space;
 
-        this.log("Started initialization...");
+        this.log("Started tile server initialization...");
     };
     Kata.extend(VisComp.TileManagerScript, SUPER);
 
@@ -50,7 +47,8 @@ Kata.require([
             return;
         }
 
-        this.log("Sky object connected to " + this.space + ". Loading layers...");
+        this.log("Sky object connected to " + this.space);
+        this.log("Loading list of layers from XML3DMapServer...");
 
         // save presence
         this.presence = presence;
@@ -60,7 +58,7 @@ Kata.require([
         $.get(this.mapServer, {action: "getlayers"}, function(layers) {
             thus.log("Received information about " + layers.length +  " layers");
 
-            var controls = document.getElementById(thus.controlsContainerId);
+            var layerControls = document.getElementById(thus.controls.layers);
 
             function createCheckbox(id, text) {
                 var input = document.createElement("input");
@@ -76,65 +74,65 @@ Kata.require([
                 div.setAttribute("class", "layer");
                 div.appendChild(input);
                 div.appendChild(label);
-                controls.insertBefore(div, controls.firstElementChild);
+                layerControls.appendChild(div);
 
-                return [div, input];
+                return input;
             }
+
+            // create all layers checkbox
+            var input = createCheckbox("all", "ALL LAYERS");
+            input.addEventListener("change", function(event) {
+                for (var n = layerControls.firstElementChild; n; n = n.nextElementSibling)
+                    if (n.hasAttribute("class") && n.getAttribute("class") == "layer" && n.firstElementChild.getAttribute("id") != "layer_all")
+                        n.firstElementChild.checked = input.checked;
+            });
 
             for (index in layers)
                 createCheckbox(layers[index].id, layers[index].val);
 
-            // create all layers checkbox
-            var res = createCheckbox("all", "ALL LAYERS");
-            res[1].addEventListener("change", function(event) {
-                for (var n = controls.firstElementChild; n; n = n.nextElementSibling)
-                    if (n.hasAttribute("class") && n.getAttribute("class") == "layer" && n.firstElementChild.getAttribute("id") != "layer_all")
-                        n.firstElementChild.checked = res[1].checked;
-            });
+            // set action for the button
+            document.getElementById(thus.controls.create).addEventListener("click", Kata.bind(thus.createLayerObjects, thus));
 
-            // set default values for tile area and enable input fields
-            document.getElementById(thus.controlsContainerId + "_minX").setAttribute("value", thus.defaultArea.minX);
-            document.getElementById(thus.controlsContainerId + "_maxX").setAttribute("value", thus.defaultArea.maxX);
-            document.getElementById(thus.controlsContainerId + "_minY").setAttribute("value", thus.defaultArea.minY);
-            document.getElementById(thus.controlsContainerId + "_maxY").setAttribute("value", thus.defaultArea.maxY);
-            document.getElementById(thus.controlsContainerId + "_minX").removeAttribute("disabled");
-            document.getElementById(thus.controlsContainerId + "_maxX").removeAttribute("disabled");
-            document.getElementById(thus.controlsContainerId + "_minY").removeAttribute("disabled");
-            document.getElementById(thus.controlsContainerId + "_maxY").removeAttribute("disabled");
-
-            // set action for the button and enable it
-            document.getElementById(thus.controlsContainerId + "_create").removeAttribute("disabled");
-            document.getElementById(thus.controlsContainerId + "_create").addEventListener("click", Kata.bind(thus.createLayerObjects, thus));
+            // enable controls
+            document.getElementById(thus.controls.area.minX).removeAttribute("disabled");
+            document.getElementById(thus.controls.area.maxX).removeAttribute("disabled");
+            document.getElementById(thus.controls.area.minY).removeAttribute("disabled");
+            document.getElementById(thus.controls.area.maxY).removeAttribute("disabled");
+            document.getElementById(thus.controls.zoom).removeAttribute("disabled");
+            document.getElementById(thus.controls.aggregate).removeAttribute("disabled");
+            document.getElementById(thus.controls.create).removeAttribute("disabled");
         }, "json");
     }
 
-    VisComp.TileManagerScript.prototype.createDummyObject = function(pos, orient, scale, mesh) {
+    VisComp.TileManagerScript.prototype.createTileObject = function(pos, orient, scale, mesh, x, y, z, layers) {
         var loc = Kata.LocationIdentityNow();
         loc.pos = pos;
         loc.orient = orient;
         loc.scale = scale;
 
         this.createObject(
-                kata_base_offset + "scripts/DummyScript.js",
-                "VisComp.DummyScript",
+                kata_base_offset + "scripts/TileScript.js",
+                "VisComp.TileScript",
                 {
                     space: this.space,
                     visual: {mesh: mesh},
                     loc: loc,
-                    logContainerId: this.logContainerId
+                    logContainerId: this.logContainerId,
+                    mapClientHint: {x: x, y: y, z: z, layers: layers}
                 });
     }
 
     VisComp.TileManagerScript.prototype.createLayerObjects = function() {
         // read data from controls
-        var minX = document.getElementById(this.controlsContainerId + "_minX").value;
-        var maxX = document.getElementById(this.controlsContainerId + "_maxX").value;
-        var minY = document.getElementById(this.controlsContainerId + "_minY").value;
-        var maxY = document.getElementById(this.controlsContainerId + "_maxY").value;
-
-        var controls = document.getElementById(this.controlsContainerId);
+        var minX = parseFloat(document.getElementById(this.controls.area.minX).value);
+        var maxX = parseFloat(document.getElementById(this.controls.area.maxX).value);
+        var minY = parseFloat(document.getElementById(this.controls.area.minY).value);
+        var maxY = parseFloat(document.getElementById(this.controls.area.maxY).value);
+        var zoom = parseInt(document.getElementById(this.controls.zoom).value);
+        var aggregate = document.getElementById(this.controls.aggregate).checked;
+        var layerControls = document.getElementById(this.controls.layers);
         var layers = [];
-        for (var n = controls.firstElementChild; n; n = n.nextElementSibling)
+        for (var n = layerControls.firstElementChild; n; n = n.nextElementSibling)
         {
             if (n.hasAttribute("class") && n.getAttribute("class") == "layer")
             {
@@ -155,22 +153,22 @@ Kata.require([
                 var bsphere = [0, 0, 0, 1000000]; // [center_x, center_y, center_z, radius]
 
                 var mesh = this.mapServer + "?action=getfullxml3d&&x=" + x + "&&y="
-                    + y + "&&z=" + this.zoom;
+                    + y + "&&z=" + zoom;
 
                 for (index in layers)
                 {
                     // if we aggregate layers, then just end each layer to the
                     // request URI, otherwise create object for each layer
-                    if (this.aggregateLayers)
+                    if (aggregate)
                         mesh += "&&layers[]=" + layers[index];
                     else
-                        this.createDummyObject(pos, orient, bsphere,
-                                          mesh + "&&layers[]=" + layers[index]);
+                        this.createTileObject(pos, orient, bsphere,
+                            mesh + "&&layers[]=" + layers[index], x, y, zoom, [layers[index]]);
                 }
 
                 // create aggregated object
-                if (this.aggregateLayers)
-                    this.createDummyObject(pos, orient, bsphere, mesh);
+                if (aggregate)
+                    this.createTileObject(pos, orient, bsphere, mesh, x, y, zoom, layers);
             }
         }
     }

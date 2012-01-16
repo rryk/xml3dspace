@@ -1,41 +1,53 @@
 #log {
-    width: 80%; 
+    width: 70%;
     font-family: monospace;
 }
 
 #controls {
     float: right;
-    width: 20%;
+    width: 30%;
     text-align: center;
-    background-color: #eee;
+    background-color: #ddd;
     padding-top: 10px;
     padding-bottom: 10px;
 }
 
 #controls button {
-    width: 90%;
+    width: 70%;
+    font-size: 20px;
+    border: 1px solid #000;
+    background-color: #eee;
 }
 
-#controls .layer {
-    margin-left: 5%;
-    margin-bottom: 2px;
-    width: 90%;
+#controls button:hover {
+    background-color: #999;
+}
+
+#controls button:active {
+    background-color: #777;
+}
+
+#controls_layers .layer {
+    margin-left: 20px;
+    margin-right: 20px;
     text-align: left;
 }
 
-#controls div.tilearea {
-    text-align: center;
-    padding-left: 10px;
-    padding-right: 10px;
+#controls .tilearea {
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
-#controls div.tilearea div {
-    display: inline-block;
-    width: 160px;
+#controls .tilearea .tilearea_label {
     text-align: right;
 }
 
-#controls div.tilearea div input {
+#controls .tilearea input {
     width: 100px;
-    text-align: center;
+}
+
+#controls .aggregate {
+    text-align: left;
+    margin-left: 20px;
+    margin-right: 20px;
 }

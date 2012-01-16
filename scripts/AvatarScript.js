@@ -3,7 +3,6 @@ if (typeof(VisComp) === "undefined") VisComp = {};
 Kata.require([
     'katajs/oh/GraphicsScript.js',
     kata_base_offset + "scripts/Tools.js",
-    kata_base_offset + "scripts/behavior/animated/Animated.js",
 ], function() {
 
     var SUPER = Kata.GraphicsScript.prototype;
@@ -27,17 +26,6 @@ Kata.require([
         // initial speeds
         this.speed = 1;
         this.angularSpeed = 0.07142;
-
-        // add animated behavior
-        this.mAnimatedBehavior =
-            new VisComp.Behavior.Animated(
-                this,
-                {
-                    idle: 'idle',
-                    forward: 'walk'
-                },
-                Kata.bind(this.animatedSetState, this)
-            );
     };
     Kata.extend(VisComp.AvatarScript, SUPER);
 

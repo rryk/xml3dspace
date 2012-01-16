@@ -18,3 +18,6 @@ lighttpd.error.log
 
 # Generated PBJ files
 *.pbj.js
+
+# Graphics from XML3DMapServer
+graphics

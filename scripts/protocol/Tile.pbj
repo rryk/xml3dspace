@@ -1,7 +1,7 @@
-/*  Sirikata
- *  Animated.pbj
+/*  XML3DSpace
+ *  Tile.pbj
  *
- *  Copyright (c) 2010, Ewen Cheslack-Postava
+ *  Copyright (c) 2012, Sergiy Byelozyorov
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,20 +32,20 @@
 
 "pbj-0.0.3"
 
-package Animated.Protocol;
+package Tile.Protocol;
 
 // This intro message is only necessary when using ODP directly
-message Intro {
+message TileDetailsRequest {
 }
 
-message SetState {
-    optional string idle = 1;
-    optional string forward = 2;
+message TileDetailsResponse {
+    required double x = 1;
+    required double y = 2;
+    required double z = 3;
+    repeated string layers = 4;
 }
-
-// Might also add a message to run one-off animations
 
 message Container {
-    optional Intro intro = 1;
-    optional SetState state = 2;
+    optional TileDetailsRequest request = 1;
+    optional TileDetailsResponse response = 2;
 }
