@@ -217,6 +217,9 @@ Kata.require([
                         // append new scene
                         for (var node = data.documentElement.firstChild; node; node = node.nextSibling)
                             elem.appendChild(document.importNode(node, true));
+
+                        // log
+                        console.log("loaded tile " + id);
                     },
                     async: false,
                     dataType: "xml"

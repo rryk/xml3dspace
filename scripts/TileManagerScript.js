@@ -147,10 +147,26 @@ Kata.require([
         {
             for (var y = minY; y <= maxY; y++)
             {
-                // FIXME: this values should be computed for each layer
                 var pos = [0, 0, 0];
                 var orient = [0, 0, 0, 1];
                 var bsphere = [0, 0, 0, 1000000]; // [center_x, center_y, center_z, radius]
+
+                $.ajax({
+                    type: "GET",
+                    url: this.mapServer,
+                    data: {action: "getcoordinates", x: x, y: y, z: zoom, layers: layers},
+                    success: function(data) {
+                        pos = [parseFloat(data['x']),
+                               parseFloat(data['y']),
+                               parseFloat(data['z'])];
+                        bsphere = [0, 0, 0, parseFloat(data['r'])];
+                    },
+                    async: false,
+                    dataType: "json"
+                });
+
+                // FIXME: this values should be computed for each layer
+
 
                 var mesh = this.mapServer + "?action=getfullxml3d&&x=" + x + "&&y="
                     + y + "&&z=" + zoom;
