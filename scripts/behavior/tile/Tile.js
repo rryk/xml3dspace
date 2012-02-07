@@ -92,7 +92,7 @@ Kata.require([
         // HACK!
         // remove mesh as it will be reconstructed later with reuse of defs
         if (remote.rMesh.indexOf("sirikataconnect.php") != -1)
-            remote.rMesh = "http://localhost/devenv3/sirikata/viscomp/cdn/empty.xml3d";
+            remote.rMesh = emptyMesh;
         // END HACK!
 
         if (this.tileInfo)
@@ -148,7 +148,7 @@ Kata.require([
         });
         $.ajax({
             type: "GET",
-            url: "http://localhost/devenv3/citygml-xml3d/xml3d-gis_current/httpdocs/sirikataconnect.php",
+            url: xml3dMapServerBase + "sirikataconnect.php",
             data: {action: "getdefs"},
             success: function(data) {
                 for (var node = data.documentElement.firstChild; node; node = node.nextSibling)
@@ -205,7 +205,7 @@ Kata.require([
                 var thus = this;
                 $.ajax({
                     type: "GET",
-                    url: "http://localhost/devenv3/citygml-xml3d/xml3d-gis_current/httpdocs/sirikataconnect.php",
+                    url: xml3dMapServerBase + "sirikataconnect.php",
                     data: {action: "getxml3dshort", x: info.x, y: info.y, z: info.z, layers: layers},
                     success: function(data) {
                         // remove old data
