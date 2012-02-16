@@ -24,7 +24,7 @@
                     'katajs/oh/plugins/sirikata/SirikataSpaceConnection.js', // to use sirikata://.../ protocol
                     'katajs/oh/plugins/loop/LoopbackSpaceConnection.js', // to use loop://.../ protocol
                 ], function() {
-                    Kata.GraphicsSimulation.initializeDriver("XML3D", emptyMesh, function() {
+                    Kata.GraphicsSimulation.initializeDriver("XML3D", "cdn/emptyWorld.xml3d", function() {
                         kata = new Kata.MainThread(
                             kata_base_offset + "scripts/AvatarScript.js",
                             "VisComp.AvatarScript",
