@@ -74,6 +74,14 @@ Kata.require([
             thus.angularSpeed = asp;
         }
 
+        getOrientation = function() {
+            return presence.predictedOrientation(new Date());
+        }
+
+        setOrientation = function(x, y, z, w) {
+            presence.setPosition([x, y, z, w]);
+        }
+
         document.getElementsByTagName("xml3d")[0].addEventListener("click", function(e){console.log(e.position.toString())});
     }
 
